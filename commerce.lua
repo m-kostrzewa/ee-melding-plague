@@ -227,13 +227,13 @@ function spawnCommerceFleet(spawnLocationX, spawnLocationY, tradeRoute, starting
         end
 
         --- unstuck logic
-        if getScenarioTime() > freighter.nextPosMeasurementAt then
-            if freigher.state == stateDuringTransit and distance(freighter:getPosition(), freighter.lastPosMeasurementX, freighter.lastPosMeasurementY) < 100.0 then
+        if getScenarioTime() > freighter.nextPosMeasurementAt and getScenarioTime() > 15.0 then
+            if freighter.state == stateDuringTransit and distance(freighter, freighter.lastPosMeasurementX, freighter.lastPosMeasurementY) < 100.0 then
                 print("[Commerce] " .. freighter:getCallSign() .. " unstucking self")
                 freighter.state = stateUnstuck
                 freighter.nextStateTransitionAt = getScenarioTime() + irandom(5, 10)
-                freighter:orderRoaming()
-            elseif freighter.state == stateUnstuck and distance(freighter, freighter.lastPosMeasurementX, freighter.lastPosMeasurementY) > 100.0 then
+                freighter:orderDefendLocation(freighter:getPosition())
+            elseif freighter.state == stateUnstuck and getScenarioTime() > freighter.nextStateTransitionAt then
                 print("[Commerce] " .. freighter:getCallSign() .. " should've unstucked myself")
                 freighter.state = stateBeginNewLeg
             end
