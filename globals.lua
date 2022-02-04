@@ -21,5 +21,7 @@ outsideExitArea = true
 bobsStation = nil
 borderStation = nil
 
-
-fp9CommerceFleets = nil
+--- commerce
+commerceFreighters = {}
+tradeRouteSouthToNorth = {}
+tradeRouteNorthToSouth = {}

@@ -1,5 +1,6 @@
 require("utils.lua")
 require("./69_mymission/comms.lua")
+require("./69_mymission/commerce.lua")
 
 
 local currentMission
@@ -11,8 +12,6 @@ local currentMission
 -- local stroke4
 
 -- local minerHab
-
-local commerceFreighters = nil
 
 function create(object_type, amount, dist_min, dist_max, x0, y0)
     for n = 1, amount do
@@ -127,211 +126,22 @@ function myInit()
 
     --- todo: station comms
     bobsStation = SpaceStation():setTemplate("Small Station"):setFaction("Independent"):setCallSign("Bob's"):setPosition(144785, -93706)
-    northExitWh = WormHole():setPosition(143898, -99701)
-    northExitWh:setTargetPosition(170960, -132962)
-    northExitWh:onTeleportation(function(self, teleportee)
-        if teleportee.typeName == "PlayerSpaceship" then
-            victory("Independent")
-        else
-            teleportee:destroy()
-        end
-    end)
+
+
+
+    --- blockade due to some anomaly
+    --- but navy ships want them to let you through because you are also navy (rep +- miners)
 
     --- todo: station comms
     --- todo: needs some heavy escort
     --- todo: part of this escort can be called for a mission but will lead to different outcome (smugglers pass by border control maybe?)
     borderStation = SpaceStation():setTemplate("Small Station"):setFaction("Human Navy"):setCallSign("Border station K83"):setPosition(-81260, 140904)
-    southExitWh = WormHole():setPosition(-85926, 144838)
-    southExitWh:setTargetPosition(-169718, 193575)
-    southExitWh:onTeleportation(function(self, teleportee)
-        if teleportee.typeName == "PlayerSpaceship" then
-            victory("Independent")
-        else
-            teleportee:destroy()
-        end
-    end)
 
-    commerceFreighters = {}
 
-    tradeRouteSouthToNorth = {}
-    tradeRouteSouthToNorth[0] = borderStation
-    tradeRouteSouthToNorth[1] = freeport9
-    tradeRouteSouthToNorth[2] = bobsStation
-    tradeRouteSouthToNorth[3] = northExitWh
-
-    tradeRouteNorthToSouth = {}
-    tradeRouteNorthToSouth[0] = bobsStation
-    tradeRouteNorthToSouth[1] = freeport9
-    tradeRouteNorthToSouth[2] = borderStation
-    tradeRouteNorthToSouth[3] = southExitWh
-
-    spawnCommerceFleet(-80728, 140307, tradeRouteSouthToNorth, 0)
-    spawnCommerceFleet(1326, 8230, tradeRouteSouthToNorth, 1)
-    spawnCommerceFleet(-40743, 76231, tradeRouteNorthToSouth, 2)
-    spawnCommerceFleet(-57647, 127520, tradeRouteSouthToNorth, 1)
-    spawnCommerceFleet(-10930, 38434, tradeRouteSouthToNorth, 1)
-    spawnCommerceFleet(-45973, 78147, tradeRouteSouthToNorth, 1)
-
-    spawnCommerceFleet(42466, -21290, tradeRouteNorthToSouth, 1)
-    spawnCommerceFleet(46996, -31030, tradeRouteNorthToSouth, 1)
-    spawnCommerceFleet(91390, -62287, tradeRouteSouthToNorth, 2)
-    spawnCommerceFleet(141447, -89920, tradeRouteNorthToSouth, 0)
-    spawnCommerceFleet(84004, -33904, tradeRouteNorthToSouth, 1)
+    initializeCommerce()
 end
 
-function playerNearingExitPoint(delta)
-    local ships = getActivePlayerShips() 
-    for i = 1, #ships do
-        ps = ships[i]
-        if ps:isValid() then
-            local distToNorthExit = distance(ps, northExitWh:getPosition())
-            local distToSouthExit = distance(ps, southExitWh:getPosition())
-    
-            if distToNorthExit > 10000 and distToSouthExit > 10000 then
-                ps.outsideExitArea = true
-            elseif distToNorthExit < 8000 and ps.outsideExitArea == true then
-                freeport9:sendCommsMessage(
-                    ps,
-                    _(ps:getCallSign() .. ", you're approaching a wormhole that leads deeper into independent space. By going through it you will leave the assigned mission area. " ..
-                        "It will be considered desertion. Turn back ASAP.")
-                )
-                ps.outsideExitArea = false
-            elseif distToSouthExit < 8000 and ps.outsideExitArea == true then
-                freeport9:sendCommsMessage(
-                    ps,
-                    _(ps:getCallSign() .. ", that wormhole leads back to Human controlled space, which is outside our area of operations. Going through it would mean dereliction of duty.")
-                )
-                ps.outsideExitArea = false
-            end
-        end 
-    end
-end
 
-function rotateWormholes(delta)
-    southExitWh:setRotation(getScenarioTime() * 3)
-    northExitWh:setRotation(getScenarioTime() * 10)
-end
-
-function spawnCommerceFleet(spawnLocationX, spawnLocationY, tradeRoute, startingLeg)
-
-    local factions = {
-        "Independent",
-        "Independent",
-        "Independent",
-        "Human Navy",
-        "CUF",
-        "TSN"
-    }
-    local freighterTypes = {
-        "Fuel Freighter 1","Fuel Freighter 2","Fuel Freighter 3","Fuel Freighter 4",
-        "Fuel Freighter 5","Fuel Jump Freighter 3","Fuel Jump Freighter 4","Fuel Jump Freighter 5",
-        "Equipment Freighter 1","Equipment Freighter 2","Equipment Freighter 3","Equipment Freighter 4",
-        "Equipment Freighter 5","Equipment Jump Freighter 3","Equipment Jump Freighter 4","Equipment Jump Freighter 5",
-        "Goods Freighter 1","Goods Freighter 2","Goods Freighter 3","Goods Freighter 4","Goods Freighter 5",
-        "Goods Jump Freighter 3","Goods Jump Freighter 4","Goods Jump Freighter 5",
-        "Personnel Freighter 1","Personnel Freighter 2","Personnel Freighter 3","Personnel Freighter 4","Personnel Freighter 5",
-        "Personnel Jump Freighter 3","Personnel Jump Freighter 4","Personnel Jump Freighter 5"
-    }
-    local escortTypes = {
-        "MT52 Hornet", "MU52 Hornet", "Fighter"
-    }
-    -- tradeRoutes = {
-    --     {bobsStation, freeport9, borderStation},
-    --     {borderStation, freeport9, bobsStation}
-    -- }
-
-    local stateBeginNewLeg = 0
-    local stateDuringTransit = 1
-    local stateDockedUnpacking = 2
-    local stateEgressSystem = 3
-
-    local faction = factions[irandom(1, #factions)]
-    local freighterType = freighterTypes[irandom(1, #freighterTypes)]
-    local freighter = CpuShip():setTemplate(freighterType):setFaction(faction):setCommsFunction(randomCommerceFreighterShipCommsFunc())
-
-    freighter.tradeRoute = tradeRoute
-    freighter.currentLeg = startingLeg
-    freighter.state = stateBeginNewLeg
-    freighter.escorts = {}
-
-    freighter.ultimateDestStr = "somewhere"
-    local ultimateDest = freighter.tradeRoute[#freighter.tradeRoute]
-    if ultimateDest.typeName == "WormHole" then
-        if ultimateDest == southExitWh then
-            freighter.ultimateDestStr = "Human space"
-        elseif ultimateDest == northExitWh then
-            freighter.ultimateDestStr = "Independent space"
-        end
-    elseif ultimateDest.typeName == "SpaceStation" then
-        freighter.ultimateDestStr = ultimateDest:getCallSign()
-    end
-
-    local freighterSpawnDX, freighterSpawnDY = vectorFromAngle(random(0, 360), random(3000, 4000))
-
-    freighter:setPosition(spawnLocationX + freighterSpawnDX, spawnLocationY + freighterSpawnDY)
-
-    table.insert(commerceFreighters, freighter)
-
-    freighter.updateFunc = function()
-        local dest = freighter.tradeRoute[freighter.currentLeg]
-
-        if freighter.state == stateBeginNewLeg then
-            if dest.typeName == "SpaceStation" then
-                print("[Commerce] " .. freighter:getCallSign() .. " begin new leg to " .. dest:getCallSign())
-                freighter:orderDock(dest)
-                freighter.state = stateDuringTransit
-
-            elseif dest.typeName == "WormHole" then
-                print("[Commerce] " .. freighter:getCallSign() .. " eggressing system ")
-                local whx, why = dest:getPosition()
-                freighter:orderFlyTowards(dest:getPosition())
-                freighter.state = stateEgressSystem
-                for i=1, #freighter.escorts do
-                    freighter.escorts[i]:orderFlyTowards(dest:getPosition())
-                end
-            else
-                print("[Commerce]  Invalid target typeName " .. dest.typeName )
-            end
-        end
-
-        if freighter.state == stateDuringTransit and freighter:isDocked(dest)  then
-            local stayTime = irandom(30, 60)
-            print("[Commerce] " .. freighter:getCallSign() .. " docked for " .. stayTime .. " seconds at " .. dest:getCallSign())
-
-            freighter.state = stateDockedUnpacking
-            freighter.dockLeaveAt = getScenarioTime() + stayTime
-        end
-
-        if freighter.state == stateDockedUnpacking and getScenarioTime() > freighter.dockLeaveAt then
-            print("[Commerce] " .. freighter:getCallSign() .. " departing " .. dest:getCallSign())
-            freighter.state = stateBeginNewLeg
-            freighter.currentLeg = freighter.currentLeg + 1
-        end
-
-    end
-
-    local fx, fy = freighter:getPosition()
-
-    local escortType = escortTypes[irandom(1, #escortTypes)]
-    local escortCount = 0
-
-    local dx, dy = vectorFromAngle(random(0,360),random(1000,3000))
-
-    while irandom(1, 100) < 70 do
-        escortShip = CpuShip():setTemplate(escortType):setCommsFunction(randomCommerceEscortShipCommsFunc())
-        escortShip:setJumpDrive(freighter:hasJumpDrive())
-        escortShip:setFaction(freighter:getFaction())
-        escortShip:setCallSign(string.format("%s E %i",freighter:getCallSign(), escortCount))
-        escortShip:setPosition(fx + dx, fy + dy)
-        --- TODO: fly in formation better? does it keep formation during jump?
-        escortShip:orderDefendTarget(freighter)
-        escortCount = escortCount + 1
-
-        escortShip.freighter = freighter
-
-        table.insert(escortShip.freighter.escorts, escortShip)
-    end
-end
 
 function myUpdate(delta)
     if currentMission == nil then
@@ -340,10 +150,8 @@ function myUpdate(delta)
         currentMission(delta)
     end
 
-    playerNearingExitPoint(delta)
-    rotateWormholes(delta)
+    wormholePlayerNearingExitPoint(delta)
+    wormholeRotate(delta)
 
-    for i = 1, #commerceFreighters do
-        commerceFreighters[i].updateFunc()
-    end
+    updateCommerce(delta)
 end
