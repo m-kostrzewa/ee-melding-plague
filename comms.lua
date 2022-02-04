@@ -192,13 +192,13 @@ minerHabComms_m1_2 = function()
             addCommsReply(
                 _("Anything else?"),
                 function()
-                    setCommsMessage(_("What, your science guy's asleep? We detected faint lifeform readings from the gas cloud nearby, about 20000 bearing 090, " ..
-                        "but it's not one of us."))
+                    setCommsMessage(_("We detected faint lifeform readings about 2 sectors away, bearing 090, " ..
+                        "but it's not one of ours."))
                     addCommsReply(
                         _("Any idea what could be there?"),
                         function()
                             setCommsMessage(_("Probably some exotic species, you know, with five legs and three heads... "..
-                             "I don't know, that's why we called you! Now, if you excuse me..."))
+                                "I don't know, that's why we called you! Now, if you excuse me..."))
                         end
                     )
                     addCommsReply(

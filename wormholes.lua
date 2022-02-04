@@ -22,7 +22,6 @@ function initializeWormholes()
             local px, py = teleportee:getPosition()
             ElectricExplosionEffect():setPosition(px, py):setSize(irandom(300, 600)):setOnRadar(true)
             teleportee:destroy()
-
         end
     end)
 end

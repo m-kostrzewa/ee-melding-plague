@@ -63,6 +63,8 @@ function initializeCommerce()
     spawnCommerceFleet(-80728, 140307, tradeRouteSouthToNorth, 0)
     spawnCommerceFleet(1326, 8230, tradeRouteSouthToNorth, 1)
     spawnCommerceFleet(-40743, 76231, tradeRouteNorthToSouth, 2)
+    spawnCommerceFleet(-47000, 80997, tradeRouteNorthToSouth, 2)
+    spawnCommerceFleet(-27702, 49339, tradeRouteNorthToSouth, 2)
     spawnCommerceFleet(-57647, 127520, tradeRouteSouthToNorth, 1)
     spawnCommerceFleet(-10930, 38434, tradeRouteSouthToNorth, 1)
     spawnCommerceFleet(-45973, 78147, tradeRouteSouthToNorth, 1)
@@ -107,11 +109,15 @@ function spawnCommerceFleet(spawnLocationX, spawnLocationY, tradeRoute, starting
     local escortTypes = {
         "Adder MK3", "Adder MK4", "Adder MK5", "Adder MK8", "MT52 Hornet", "MU52 Hornet", "Fighter"
     }
+    local escortCallsignFormats =  {
+        "%s E %i", "%s-%i", "%s/%i", "%s 0%i"
+    }
 
     local stateBeginNewLeg = 0
     local stateDuringTransit = 1
     local stateDockedUnpacking = 2
     local stateEgressSystem = 3
+    local stateUnstuck = 8
     local stateDuringCombat = 9
 
     local faction = factions[irandom(1, #factions)]
@@ -127,6 +133,10 @@ function spawnCommerceFleet(spawnLocationX, spawnLocationY, tradeRoute, starting
     freighter.state = stateBeginNewLeg
     freighter.stateBeforeCombat = nil
     freighter.escorts = {}
+
+    --- for unstuck logic
+    freighter.nextPosMeasurementAt = 0 
+    freighter.lastPosMeasurementX, freighter.lastPosMeasurementY = freighter:getPosition()
 
     freighter.ultimateDestStr = "somewhere"
     local ultimateDest = freighter.tradeRoute[#freighter.tradeRoute]
@@ -207,7 +217,7 @@ function spawnCommerceFleet(spawnLocationX, spawnLocationY, tradeRoute, starting
             print("[Commerce] " .. freighter:getCallSign() .. " docked for " .. stayTime .. " seconds at " .. dest:getCallSign())
 
             freighter.state = stateDockedUnpacking
-            freighter.dockLeaveAt = getScenarioTime() + stayTime
+            freighter.nextStateTransitionAt = getScenarioTime() + stayTime
 
             for i=1, #freighter.escorts do
                 if freighter.escorts[i]:isValid() then
@@ -216,7 +226,23 @@ function spawnCommerceFleet(spawnLocationX, spawnLocationY, tradeRoute, starting
             end
         end
 
-        if freighter.state == stateDockedUnpacking and getScenarioTime() > freighter.dockLeaveAt then
+        --- unstuck logic
+        if getScenarioTime() > freighter.nextPosMeasurementAt then
+            if freigher.state == stateDuringTransit and distance(freighter:getPosition(), freighter.lastPosMeasurementX, freighter.lastPosMeasurementY) < 100.0 then
+                print("[Commerce] " .. freighter:getCallSign() .. " unstucking self")
+                freighter.state = stateUnstuck
+                freighter.nextStateTransitionAt = getScenarioTime() + irandom(5, 10)
+                freighter:orderRoaming()
+            elseif freighter.state == stateUnstuck and distance(freighter, freighter.lastPosMeasurementX, freighter.lastPosMeasurementY) > 100.0 then
+                print("[Commerce] " .. freighter:getCallSign() .. " should've unstucked myself")
+                freighter.state = stateBeginNewLeg
+            end
+
+            freighter.lastPosMeasurementX, freighter.lastPosMeasurementY = freighter:getPosition()
+            freighter.nextPosMeasurementAt = getScenarioTime() + irandom(10, 20)
+        end
+
+        if freighter.state == stateDockedUnpacking and getScenarioTime() > freighter.nextStateTransitionAt then
             print("[Commerce] " .. freighter:getCallSign() .. " departing " .. dest:getCallSign())
             freighter.state = stateBeginNewLeg
             freighter.currentLeg = freighter.currentLeg + 1
@@ -231,13 +257,16 @@ function spawnCommerceFleet(spawnLocationX, spawnLocationY, tradeRoute, starting
 
     local dx, dy = vectorFromAngle(random(0,360),random(100,500))
 
+
+    local escortCallsignFormat = escortCallsignFormats[irandom(1, #escortCallsignFormats)]
     while irandom(1, 100) < 45 do
         local escortShip = CpuShip():setTemplate(escortType):setCommsFunction(randomCommerceEscortShipCommsFunc())
         escortShip:setJumpDrive(freighter:hasJumpDrive())
         escortShip:setFaction(freighter:getFaction())
-        escortShip:setCallSign(string.format("%s E %i",freighter:getCallSign(), escortCount))
 
-        ElectricExplosionEffect():setPosition(fx + dx, fy + dy):setSize(300):setOnRadar(true)
+
+        escortShip:setCallSign(string.format(escortCallsignFormat, freighter:getCallSign(), escortCount))
+
         escortCount = escortCount + 1
 
         escortShip.freighter = freighter
@@ -249,6 +278,8 @@ function spawnCommerceFleet(spawnLocationX, spawnLocationY, tradeRoute, starting
     for i=1, #freighter.escorts do
         local dx, dy = vectorFromAngle(30.0 + i * angleSeparation, 700)
         freighter.escorts[i]:setPosition(fx + dx, fy + dy)
+        ElectricExplosionEffect():setPosition(fx + dx, fy + dy):setSize(300):setOnRadar(true)
+
         freighter.escorts[i]:setRotation(freighter:getRotation())
         freighter.escorts[i]:setScanned(freighter:isFriendly(getPlayerShip(-1)))
     end
