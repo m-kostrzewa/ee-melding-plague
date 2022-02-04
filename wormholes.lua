@@ -7,6 +7,8 @@ function initializeWormholes()
             victory("Independent")
         else
             maybeRespawnCommerceFleet(self, teleportee)
+            local px, py = teleportee:getPosition()
+            ElectricExplosionEffect():setPosition(px, py):setSize(irandom(300, 600)):setOnRadar(true)
             teleportee:destroy()
         end
     end)
@@ -17,7 +19,10 @@ function initializeWormholes()
             victory("Independent")
         else
             maybeRespawnCommerceFleet(self, teleportee)
+            local px, py = teleportee:getPosition()
+            ElectricExplosionEffect():setPosition(px, py):setSize(irandom(300, 600)):setOnRadar(true)
             teleportee:destroy()
+
         end
     end)
 end
@@ -35,14 +40,16 @@ function wormholePlayerNearingExitPoint(delta)
             elseif distToNorthExit < 8000 and ps.outsideExitArea == true then
                 freeport9:sendCommsMessage(
                     ps,
-                    _(ps:getCallSign() .. ", you're approaching a wormhole that leads deeper into independent space. By going through it you will leave the assigned mission area. " ..
+                    _(ps:getCallSign() .. ", you're approaching a wormhole that leads deeper into independent space. " ..
+                        "By going through it you will leave the assigned mission area. " ..
                         "It will be considered desertion. Turn back ASAP.")
                 )
                 ps.outsideExitArea = false
             elseif distToSouthExit < 8000 and ps.outsideExitArea == true then
                 freeport9:sendCommsMessage(
                     ps,
-                    _(ps:getCallSign() .. ", that wormhole leads back to Human controlled space, which is outside our area of operations. Going through it would mean dereliction of duty.")
+                    _(ps:getCallSign() .. ", that wormhole leads back to Human controlled space, which is outside our area of operations. " .. 
+                        "Going through it would mean dereliction of duty.")
                 )
                 ps.outsideExitArea = false
             end

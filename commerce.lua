@@ -86,9 +86,13 @@ function spawnCommerceFleet(spawnLocationX, spawnLocationY, tradeRoute, starting
         "Independent",
         "Independent",
         "Independent",
+        "Independent",
         "Human Navy",
         "CUF",
-        "TSN"
+        "USN",
+        "Arlenians",
+        "Arlenians",
+        "Arlenians"
     }
     local freighterTypes = {
         "Fuel Freighter 1","Fuel Freighter 2","Fuel Freighter 3","Fuel Freighter 4",
@@ -101,22 +105,27 @@ function spawnCommerceFleet(spawnLocationX, spawnLocationY, tradeRoute, starting
         "Personnel Jump Freighter 3","Personnel Jump Freighter 4","Personnel Jump Freighter 5"
     }
     local escortTypes = {
-        "MT52 Hornet", "MU52 Hornet", "Fighter"
+        "Adder MK3", "Adder MK4", "Adder MK5", "Adder MK8", "MT52 Hornet", "MU52 Hornet", "Fighter"
     }
 
     local stateBeginNewLeg = 0
     local stateDuringTransit = 1
     local stateDockedUnpacking = 2
     local stateEgressSystem = 3
+    local stateDuringCombat = 9
 
     local faction = factions[irandom(1, #factions)]
     local freighterType = freighterTypes[irandom(1, #freighterTypes)]
-    local freighter = CpuShip():setTemplate(freighterType):setFaction(faction):setCommsFunction(randomCommerceFreighterShipCommsFunc()):setPosition(spawnLocationX, spawnLocationY)
+    local freighter = CpuShip():
+        setTemplate(freighterType):setFaction(faction):setCommsFunction(randomCommerceFreighterShipCommsFunc()):setPosition(spawnLocationX, spawnLocationY)
+    freighter:setScanned(freighter:isFriendly(getPlayerShip(-1)))
+
     ElectricExplosionEffect():setPosition(spawnLocationX, spawnLocationY):setSize(600):setOnRadar(true)
 
     freighter.tradeRoute = tradeRoute
     freighter.currentLeg = startingLeg
     freighter.state = stateBeginNewLeg
+    freighter.stateBeforeCombat = nil
     freighter.escorts = {}
 
     freighter.ultimateDestStr = "somewhere"
@@ -138,11 +147,36 @@ function spawnCommerceFleet(spawnLocationX, spawnLocationY, tradeRoute, starting
             return
         end
 
+        local sensorHystheresis = 500.0
+        if freighter.state ~= stateDuringCombat and freighter:areEnemiesInRange(freighter:getShortRangeRadarRange() - sensorHystheresis) then
+            print("[Commerce] " .. freighter:getCallSign() .. " defending")
+
+            freighter.stateBeforeCombat = freighter.state
+            freighter.state = stateDuringCombat
+
+            for i=1, #freighter.escorts do
+                if freighter.escorts[i]:isValid() then 
+                    freighter.escorts[i]:orderDefendTarget(freighter)
+                end
+            end
+        end
+
+        if freighter.state == stateDuringCombat then
+            if not freighter:areEnemiesInRange(freighter:getShortRangeRadarRange()) then
+                freighter.state = stateBeginNewLeg
+                print("[Commerce] " .. freighter:getCallSign() .. " standing down")
+            else
+                --- still fighting!
+                --- early return so we don't execute the rest of AI "stack"
+                return
+            end
+        end
+
         local dest = freighter.tradeRoute[freighter.currentLeg]
 
         if freighter.state == stateBeginNewLeg then
             if dest.typeName == "SpaceStation" then
-                print("[Commerce] " .. freighter:getCallSign() .. " begin new leg to " .. dest:getCallSign())
+                print("[Commerce] " .. freighter:getCallSign() .. " beginning new leg to " .. dest:getCallSign())
                 freighter:orderDock(dest)
                 freighter.state = stateDuringTransit
 
@@ -198,7 +232,7 @@ function spawnCommerceFleet(spawnLocationX, spawnLocationY, tradeRoute, starting
     local dx, dy = vectorFromAngle(random(0,360),random(100,500))
 
     while irandom(1, 100) < 45 do
-        escortShip = CpuShip():setTemplate(escortType):setCommsFunction(randomCommerceEscortShipCommsFunc())
+        local escortShip = CpuShip():setTemplate(escortType):setCommsFunction(randomCommerceEscortShipCommsFunc())
         escortShip:setJumpDrive(freighter:hasJumpDrive())
         escortShip:setFaction(freighter:getFaction())
         escortShip:setCallSign(string.format("%s E %i",freighter:getCallSign(), escortCount))
@@ -216,6 +250,7 @@ function spawnCommerceFleet(spawnLocationX, spawnLocationY, tradeRoute, starting
         local dx, dy = vectorFromAngle(30.0 + i * angleSeparation, 700)
         freighter.escorts[i]:setPosition(fx + dx, fy + dy)
         freighter.escorts[i]:setRotation(freighter:getRotation())
+        freighter.escorts[i]:setScanned(freighter:isFriendly(getPlayerShip(-1)))
     end
 
     print("[Commerce] Spawned fleet " .. freighter:getCallSign() .. " with " .. escortCount .. " escorts")
@@ -239,7 +274,6 @@ function maybeRespawnCommerceFleet(wormhole, teleportee)
             end
             local wx, wy = spawnAtWh:getPosition()
             local dx, dy = vectorFromAngle(random(0,360),random(3500,4000))
-            print(tradeRoute)
             spawnCommerceFleet(wx+dx, wy+dy, tradeRoute, 0)
         end
     end

@@ -234,3 +234,24 @@ minerHabComms_m1_2 = function()
     )
 end
 
+
+function randomizedBdfCommsFunc()
+    local rand = irandom(0, 3)
+    if rand == 0 then
+        return function()
+            setCommsMessage(_("This is " .. comms_target:getCallSign() .. " of the Border Defense Fleet, all systems green."))
+        end
+    elseif rand == 1 then
+        return function()
+            setCommsMessage(_(comms_target:getCallSign() .. " here. Want anything, ask my commander stationed at " .. borderStation:getCallSign() .. "."))
+        end
+    elseif rand == 2 then
+        return function()
+            setCommsMessage(_("They see me rollin'. They hatin'. Patrollin'... huh? I mean... " .. comms_target:getCallSign() .. " out."))
+        end
+    elseif rand == 3 then
+        return function()
+            setCommsMessage(_("We're stationed at " .. borderStation:getCallSign() .. ". Ask there. " .. comms_target:getCallSign() .. " over and out."))
+        end
+    end
+end

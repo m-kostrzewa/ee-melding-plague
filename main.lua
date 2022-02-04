@@ -1,7 +1,7 @@
 require("utils.lua")
 require("./69_mymission/comms.lua")
 require("./69_mymission/commerce.lua")
-
+require("./69_mymission/wormholes.lua")
 
 local currentMission
 
@@ -70,9 +70,12 @@ function myInit()
     -- currentMission = mission1_1_pre
     currentMission = mission1_2_body
 
+
+    initializeWormholes()
+
     player = PlayerSpaceship():setFaction("Human Navy"):setTemplate("Phobos T3"):setCallSign("Stroke 3"):setWarpDrive(true):setCanCombatManeuver(true)
 
-    freeport9 = SpaceStation():setTemplate("Huge Station"):setFaction("Human Navy"):setCallSign("Freeport 9"):setPosition(2000, 2000):setCommsFunction(freeport9Comms)
+    freeport9 = SpaceStation():setTemplate("Medium Station"):setFaction("Human Navy"):setCallSign("Freeport 9"):setPosition(2000, 2000):setHeading(270):setCommsFunction(freeport9Comms)
     local fp9_x, fp9_y = freeport9:getPosition()
 
 
@@ -81,16 +84,17 @@ function myInit()
 
 
     --- TODO: less probes??..
-    stroke1 = CpuShip():setFaction("Human Navy"):setTemplate("Phobos T3"):setCallSign("Stroke 1"):setScanned(true):setPosition(500, 500):setCommsFunction(stroke1Comms):orderDefendTarget(freeport9):setWarpDrive(true)
+    stroke1 = CpuShip():setFaction("Human Navy"):setTemplate("Phobos T3"):setCallSign("Stroke 1"):setScanned(true):setPosition(-1000, 0):setHeading(270):setCommsFunction(stroke1Comms):orderDefendTarget(freeport9):setWarpDrive(true)
+    stroke1:setImpulseMaxSpeed(stroke1:getImpulseMaxSpeed() * 0.9) --- so that escorts can catch up
     stroke1.talked = false
     --- TODO: should be a way to make this guy like us.
     stroke1.likesPlayer = false
 
-    stroke2 = CpuShip():setFaction("Human Navy"):setTemplate("Phobos T3"):setCallSign("Stroke 2"):setScanned(true):setPosition(500, 700):setCommsFunction(stroke2Comms):orderFlyFormation(stroke1, 200, 200):setWarpDrive(true)
+    stroke2 = CpuShip():setFaction("Human Navy"):setTemplate("Phobos T3"):setCallSign("Stroke 2"):setScanned(true):setPosition(-500, -500):setHeading(270):setCommsFunction(stroke2Comms):orderFlyFormation(stroke1, -500, 500):setWarpDrive(true)
     stroke2.talked = false
     stroke2.likesPlayer = false
 
-    stroke4 = CpuShip():setFaction("Human Navy"):setTemplate("Phobos T3"):setCallSign("Stroke 4"):setScanned(true):setPosition(500, 300):setCommsFunction(stroke4Comms):orderFlyFormation(stroke1, -200, 200):setWarpDrive(true)
+    stroke4 = CpuShip():setFaction("Human Navy"):setTemplate("Phobos T3"):setCallSign("Stroke 4"):setScanned(true):setPosition(-500, 500):setHeading(270):setCommsFunction(stroke4Comms):orderFlyFormation(stroke1, -500, -500):setWarpDrive(true)
     stroke4.talked = false
     stroke4.likesPlayer = false
 
@@ -133,9 +137,14 @@ function myInit()
     --- but navy ships want them to let you through because you are also navy (rep +- miners)
 
     --- todo: station comms
-    --- todo: needs some heavy escort
     --- todo: part of this escort can be called for a mission but will lead to different outcome (smugglers pass by border control maybe?)
     borderStation = SpaceStation():setTemplate("Small Station"):setFaction("Human Navy"):setCallSign("Border station K83"):setPosition(-81260, 140904)
+
+    CpuShip():setFaction("Human Navy"):setTemplate("Weapons platform"):setCallSign("BDF88"):setPosition(-80703, 141433):orderRoaming():setCommsFunction(randomizedBdfCommsFunc()):setScanned(true)
+
+    local bdf01 = CpuShip():setFaction("Human Navy"):setTemplate("Dreadnought"):setCallSign("BDF01"):setPosition(-80487, 140147):orderDefendLocation(-80587, 140025):setCommsFunction(randomizedBdfCommsFunc()):setScanned(true)
+    CpuShip():setFaction("Human Navy"):setTemplate("MU52 Hornet"):setCallSign("BDF13"):setPosition(-81986, 142951):orderDefendTarget(bdf01):setCommsFunction(randomizedBdfCommsFunc()):setScanned(true)
+    CpuShip():setFaction("Human Navy"):setTemplate("MU52 Hornet"):setCallSign("BDF14"):setPosition(-81014, 142838):orderDefendTarget(bdf01):setCommsFunction(randomizedBdfCommsFunc()):setScanned(true)
 
 
     initializeCommerce()
