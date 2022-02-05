@@ -1,27 +1,11 @@
 require("utils.lua")
 require("./69_mymission/comms.lua")
 require("./69_mymission/commerce.lua")
+require("./69_mymission/terrain.lua")
 require("./69_mymission/wormholes.lua")
 
 local currentMission
-
--- local freeport9
-
--- local stroke1
--- local stroke3
--- local stroke4
-
--- local minerHab
-
-function create(object_type, amount, dist_min, dist_max, x0, y0)
-    for n = 1, amount do
-        local r = random(0, 360)
-        local distance = random(dist_min, dist_max)
-        x = x0 + math.cos(r / 180 * math.pi) * distance
-        y = y0 + math.sin(r / 180 * math.pi) * distance
-        object_type():setPosition(x, y)
-    end
-end
+local numSectorsPerSide
 
 
 
@@ -31,7 +15,7 @@ function hfFreighterSquawk(delta)
 
     if blips[currBlip] == 1 then
         hfFreighter:setCallSign("HF2137")
-    else
+    else       
         hfFreighter:setCallSign("")
     end
 end
@@ -74,9 +58,11 @@ function myInit()
     initializeWormholes()
 
     player = PlayerSpaceship():setFaction("Human Navy"):setTemplate("Phobos T3"):setCallSign("Stroke 3"):setWarpDrive(true):setCanCombatManeuver(true)
-
+    player.nearExitWormhole = false
+    player.nearMapBoundary = false
+    
     freeport9 = SpaceStation():setTemplate("Medium Station"):setFaction("Human Navy"):setCallSign("Freeport 9"):setPosition(2000, 2000):setHeading(270):setCommsFunction(freeport9Comms)
-    local fp9_x, fp9_y = freeport9:getPosition()
+    local freeport9X, freeport9Y = freeport9:getPosition()
 
 
     -- table.insert(friendlyList, setCirclePos(CpuShip():setTemplate(friendlyShip[friendlyShipIndex]):setRotation(a):setFaction("Human Navy"):orderRoaming():setScanned(true), 0, 0, a + random(-5, 5), d + random(-100, 100)))
@@ -103,7 +89,6 @@ function myInit()
     -- for n = 1, 20 do
     --     Nebula():setPosition(random(-4*sectorSize, 4*sectorSize), random(-2*sectorSize, 2*sectorSize))
     -- end
-    create(Nebula, 40, 15000, 40000, fp9_x, fp9_y)
 
     -- local zone = Zone():setPoints(0, 0, 500, 100, 600, 700, 300, 400)
 
@@ -114,10 +99,9 @@ function myInit()
     SpaceStation():setTemplate("Small Station"):setFaction("Independent"):setCallSign("Hab 221"):setPosition(136087, 66575):setRotation(random(0, 360)):setCommsFunction(minerHabNope2Comms)
     SpaceStation():setTemplate("Small Station"):setFaction("Independent"):setCallSign("Hab 219"):setPosition(137619, 63725):setRotation(random(0, 360)):setCommsFunction(minerHabNope3Comms)
 
-    local minerHab_x, minerHab_y = minerHab:getPosition()
+    local minerHabX, minerHabY = minerHab:getPosition()
 
     --- add ElectricExplosionEffect to some nebulas
-    create(Nebula, 40, 15000, 40000, minerHab_x, minerHab_y)
 
     --- todo: chat for these ships
     CpuShip():setFaction("Independent"):setTemplate("Transport3x5"):setCallSign("SS5"):setPosition(136479, 64503)
@@ -125,8 +109,7 @@ function myInit()
     CpuShip():setFaction("Independent"):setTemplate("Tug"):setCallSign("UTI6"):setPosition(136243, 66132)
 
 
-    hfFreighter = CpuShip():setFaction("Independent"):setTemplate("Transport5x1"):setCallSign("HF2137"):setPosition(180616, 61131):orderIdle():setImpulseMaxSpeed(0)
-    Nebula():setPosition(174809, 60968)
+
 
     --- todo: station comms
     bobsStation = SpaceStation():setTemplate("Small Station"):setFaction("Independent"):setCallSign("Bob's"):setPosition(144785, -93706)
@@ -147,10 +130,47 @@ function myInit()
     CpuShip():setFaction("Human Navy"):setTemplate("MU52 Hornet"):setCallSign("BDF14"):setPosition(-81014, 142838):orderDefendTarget(bdf01):setCommsFunction(randomizedBdfCommsFunc()):setScanned(true)
 
 
+    hfFreighter = CpuShip():setFaction("Independent"):setTemplate("Transport5x1"):setCallSign("HF2137"):setPosition(146708, 142710)
+    local hfFreighterX, hfFreighterY = hfFreighter:getPosition()
+
+
+    numSectorsPerSide = 20
+    initializeNebulas(60, 0, 0, numSectorsPerSide)
+
+    clearNebulasInRadius(minerHabX, minerHabY, 10000)
+    clearNebulasInRadius(freeport9X, freeport9Y, 10000)
+    clearNebulasInRadius(hfFreighterX, hfFreighterY, 10000)
+
+    createInRing(Nebula, 5, 8000, 10000, minerHabX, minerHabY)
+    createInRing(Nebula, 5, 8000, 10000, hfFreighterX, hfFreighterY)
+
+    combNebulas()
+
     initializeCommerce()
 end
 
 
+function playerNearingMapBoundary(delta)
+    local ships = getActivePlayerShips() 
+    for i = 1, #ships do
+        local ps = ships[i]
+        if ps:isValid() then
+            local distToFp9 = distance(ps, freeport9)
+                
+            if distToFp9 < ((numSectorsPerSide - 2) / 2) * 20000 and ps.nearMapBoundary == true then 
+                ps.nearMapBoundary = false
+            elseif distToFp9 > ((numSectorsPerSide - 1) / 2) * 20000 and ps.nearMapBoundary == false then 
+                freeport9:sendCommsMessage(
+                    ps,
+                    _(ps:getCallSign() .. ", you're approaching the boundaries of our operational area. Turn back or face consequences of desertion.")
+                )
+                ps.nearMapBoundary = true
+            elseif distToFp9 > (numSectorsPerSide / 2) * 20000 then 
+                victory("Independent")
+            end
+        end
+    end
+end
 
 function myUpdate(delta)
     if currentMission == nil then
@@ -161,6 +181,8 @@ function myUpdate(delta)
 
     wormholePlayerNearingExitPoint(delta)
     wormholeRotate(delta)
+
+    playerNearingMapBoundary(delta)
 
     updateCommerce(delta)
 end

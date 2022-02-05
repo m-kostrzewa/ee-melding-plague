@@ -34,23 +34,23 @@ function wormholePlayerNearingExitPoint(delta)
             local distToNorthExit = distance(ps, northExitWh:getPosition())
             local distToSouthExit = distance(ps, southExitWh:getPosition())
     
-            if distToNorthExit > 10000 and distToSouthExit > 10000 then
-                ps.outsideExitArea = true
-            elseif distToNorthExit < 8000 and ps.outsideExitArea == true then
+            if distToNorthExit > 10000 and distToSouthExit > 10000 and ps.nearExitWormhole == false then
+                ps.nearExitWormhole = true
+            elseif distToNorthExit < 8000 and ps.nearExitWormhole == true then
                 freeport9:sendCommsMessage(
                     ps,
                     _(ps:getCallSign() .. ", you're approaching a wormhole that leads deeper into independent space. " ..
                         "By going through it you will leave the assigned mission area. " ..
                         "It will be considered desertion. Turn back ASAP.")
                 )
-                ps.outsideExitArea = false
-            elseif distToSouthExit < 8000 and ps.outsideExitArea == true then
+                ps.nearExitWormhole = false
+            elseif distToSouthExit < 8000 and ps.nearExitWormhole == true then
                 freeport9:sendCommsMessage(
                     ps,
                     _(ps:getCallSign() .. ", that wormhole leads back to Human controlled space, which is outside our area of operations. " .. 
                         "Going through it would mean dereliction of duty.")
                 )
-                ps.outsideExitArea = false
+                ps.nearExitWormhole = false
             end
         end 
     end
