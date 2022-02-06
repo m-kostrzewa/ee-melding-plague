@@ -142,30 +142,30 @@ end
 
 
 function hfFreighterComms()
-    setCommsMessage(_("<Channel open, but no reply>"))
     hfFreighterCommsMissionSpecific()
 end
 
 hfFreighterComms_m1_2_inner = function()
-    setCommsMessage(_("See, a... saboteur... yes, a saboteur got on board and activated the self-destruct sequence. We managed to stop them but our jump drive got damaged. " ..
-        "And ehm... we're running low on the oxygen, so vital to human survival, yes. We need to get to a human station, and soon. Can you take us there?"))
+    setCommsMessage(_("See, a... saboteur... true, a saboteur got on board and activated the self-destruct sequence. We managed to stop them but our jump drive got damaged. " ..
+        "And ehm... we're running low on the oxygen, so vital to human survival, isn't it true? We need to get to a human station, and soon. Can you take us there?"))
     addCommsReply(
         _("We will escort you to nearby miner's habitations."),
         function()
             hfFreighter.gotoMiners = true
-            setCommsMessage(_("Ah, that's perfect! Thank you. Can't wait to breathe more oxygen, yes! Setting course now."))
+            setCommsMessage(_("Ah, that's perfect! Thank you. Can't wait to breathe more oxygen, true! Setting course now."))
         end
     )
     addCommsReply(
         _("We will arrange a jump carrier from Freeport 9."),
         function()
             hfFreighter.awaitJumpCarrier = true
-            setCommsMessage(_("Yes! Freeport 9. A lot of traffic there these days. Please take us there soon. We will await for the jump carrier here, yes. Please arrange it."))
+            setCommsMessage(_("Confirm! Freeport 9. A lot of traffic there these days. Please take us there soon. We will await for the jump carrier here, yes. Please arrange it."))
         end
     )
 end
 
 hfFreighterComms_m1_2 = function()
+    setCommsMessage(_("<Channel open, but no reply>"))
     addCommsReply(
         _("HF2137, report in!"),
         function()
@@ -173,7 +173,7 @@ hfFreighterComms_m1_2 = function()
             addCommsReply(
                 _("We can hear you breathing, you know?"),
                 function()
-                    setCommsMessage(_("... What do you mean breathing? Ah, yes, you mean human breathing, is what you mean... Yes, I was breathing, thank you very much. " ..
+                    setCommsMessage(_("... What do you mean breathing? Ah, true, you mean human breathing, is what you mean... True, I was breathing, thank you very much. " ..
                         "Listen, I have a favor to ask."))
                         addCommsReply(
                             _("Yes?"),
@@ -186,13 +186,13 @@ hfFreighterComms_m1_2 = function()
             addCommsReply(
                 _("This is the Navy, are there any injured?"),
                 function()
-                    setCommsMessage(_("The Navy?... Meaning more Humans? That's right, it's the Human Navy... Why ask?"))
+                    setCommsMessage(_("The Navy?... Meaning Humans again? That's true, it's the Human Navy... Why ask?"))
                     addCommsReply(
                         _("You're transmitting S.O.S. using your transponder."),
                         function()
                             hfFreighter.sosBlinkingEnabled = false
                             hfFreighter:setCallSign("HF2137")
-                            setCommsMessage(_("What? Ah... that... Everything is fine. It's just broken, see, yes? Let me fix it really quick. " ..
+                            setCommsMessage(_("What? Ah... that... Everything is fine. It's just broken, see, yes? S.O.S. was false. Let me fix it really quick. " ..
                                 "Listen, I have a favor to ask."))
                             addCommsReply(
                                 _("Yes?"),
@@ -205,7 +205,7 @@ hfFreighterComms_m1_2 = function()
                     addCommsReply(
                         _("Just worried. Tell me... souls on board?"),
                         function()
-                            setCommsMessage(_("Souls? Let me check... only me, yes. Listen, I have a favor to ask."))
+                            setCommsMessage(_("Souls? Let me check... only ONE, yes. Listen, I have a favor to ask."))
                             addCommsReply(
                                 _("Yes?"),
                                 function()
@@ -219,6 +219,42 @@ hfFreighterComms_m1_2 = function()
         end
     )
 end
+
+hfFreighterComms_m1_3_a_1 = function()
+    setCommsMessage(_("We hear that the Kraylor are incoming. We will wait until you resolve the event. Yes. This is interesting."))
+end
+
+hfFreighterComms_m1_3_a = function()
+    setCommsMessage(_("Yes?"))
+    addCommsReply(
+        _("HF2137, everything OK?"),
+        function()
+            setCommsMessage(_("Yes. Status OK. We keep going to miner habs, as we need to breathe the oxygen and eat food."))
+            addCommsReply(
+                _("What were you doing here anyways?"),
+                function()
+                    setCommsMessage(_("Waiting... for a long time, yes. Very long time."))
+                    addCommsReply(
+                        _("For what?"),
+                        function()
+                            setCommsMessage(_("A... ship."))
+                            addCommsReply(
+                                _("Where is it? Did they come?"),
+                                function()
+                                    setCommsMessage(_("Yes, oh yes... Ah, but then the saboteur came, as you recall, yes?"))
+                                    addCommsReply(
+                                        _("Yes. Glad we could be of help.")
+                                    )
+                                end
+                            )
+                        end
+                    )
+                end
+            )
+        end
+    )
+end
+
 
 function freeport9Comms()
     setCommsMessage(_("Freeport 9 here."))
@@ -343,4 +379,132 @@ function randomizedBdfCommsFunc()
             setCommsMessage(_("We're stationed at " .. borderStation:getCallSign() .. ". Ask there. " .. comms_target:getCallSign() .. " over and out."))
         end
     end
+end
+
+kralienFiendComms_1 = function()
+    setCommsMessage(_("Me Roghar raugharR', the humen slayer, whose father is Raghran raugharR', Scourrge of the weak, whose father is Gar Raughar, drinker of blood. We talk. Cease fire. Yes?"))
+    addCommsReply(
+        _("Agreed."),
+        function()
+            ambushState = ambushStateCeaseFire
+            setCommsMessage(_("Okay. I bring friends over."))
+            addCommsReply(
+                _("Wait what?!.."), 
+                function()
+                    setCommsMessage(_("<Channel closed>"))
+                end
+            )
+        end
+    )
+    addCommsReply(
+        _("We don't talk with Kraylors."),
+        function()
+            ambushState = ambushStateAllOutAttack
+            setCommsMessage(_("Glory to raugharR' Clan! We crush maggots!"))
+        end
+    )
+end
+
+kralienFiendComms_2 = function()
+    setCommsMessage(_("Friends coming. I call you back. Await."))
+end
+
+kralienFiendComms_3 = function()
+    setCommsMessage(_("We here to claim a prize. Give us freighter. You no need it anyways."))
+    addCommsReply(
+        _("The freighter is under Human Navy protection."),
+        function()
+            setCommsMessage(_("Ha! I only see a puny frigate, with scared little humies on board. Haha!"))
+            addCommsReply(
+                _("We will call for backup and they will crush you."),
+                function()
+                    setCommsMessage(_("Hahaha! Puny humans think we will wait so long time."))
+                    addCommsReply(
+                        _("On second thought, let's talk this through.."),
+                        kralienFiendComms_3    
+                    )
+                    addCommsReply(
+                        _("That's it. You're going down!"),
+                        function()
+                            setCommsMessage(_("Glory to raugharR' Clan! We crush maggots!"))
+                            ambushState = ambushStateAllOutAttack
+                        end
+                    )
+                end       
+            )
+            addCommsReply(
+                _("Human Navy is the only legitimate authority in this sector."),
+                function()
+                    setCommsMessage(_("You funny guy. I like! But no time for jokes!"))
+                    addCommsReply(
+                        _("<back>"),
+                        kralienFiendComms_3
+                    )
+                end       
+            )
+            addCommsReply(
+                _("It's not about the size - it's about technique."),
+                function()
+                    setCommsMessage(_("Haha! This what my father say! Mother not happy! But serious now!"))
+                    addCommsReply(
+                        _("<back>"),
+                        kralienFiendComms_3
+                    )
+                end       
+            )
+            addCommsReply(
+                _("Maybe we're not strong, but we're agile."),
+                function()
+                    setCommsMessage(_("True that. Know what? Give me your Combat Maneuver Drive, we go away."))
+                    addCommsReply(
+                        _("OK <give Combat Maneuver Drive>"),
+                        function()
+                            setCommsMessage(_("Good human. Good bye."))
+                            comms_source:setCanCombatManeuver(false)
+                            comms_source:addReputationPoints(50)
+                            ambushState = ambushStateResolved
+                        end
+                    )
+                    addCommsReply(
+                        _("I don't think so."),
+                        function()
+                            setCommsMessage(_("Maybe you rethink offer later."))
+                            addCommsReply(
+                                _("<back>"),
+                                kralienFiendComms_3
+                            )
+                        end
+                    )
+                end
+            )
+        end
+    )
+    addCommsReply(
+        _("Small fleet against a single frigate. raugharR' clan must be weak."),
+        function()
+            setCommsMessage(_("Argh! raugharR' Clan is the Greatest! My father is Raghran raugharR', Scourrge of the weak, whose father is Gar Raughar, drinker of blood!!!"))
+            addCommsReply(
+                _("You are correct, we apologize."),
+                kralienFiendComms_3
+            )
+            addCommsReply(
+                _("Prove it! We challenge you to a duel."),
+                function()
+                    setCommsMessage(_("Glory to raugharR' Clan! Escort ships, do not interfere!"))
+                    ambushState = ambushStateDuel
+                end
+            )
+        end
+    )
+    addCommsReply(
+        _("Never!"),
+        function()
+            ambushState = ambushStateAllOutAttack
+            setCommsMessage(_("Glory to raugharR' Clan! We crush maggots!"))
+        end
+    )
+end
+
+function kralienFiendComms()
+    kralienFiendCommsMissionSpecific()
 end

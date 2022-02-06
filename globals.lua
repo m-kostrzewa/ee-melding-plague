@@ -28,3 +28,34 @@ borderStation = nil
 commerceFreighters = {}
 tradeRouteSouthToNorth = {}
 tradeRouteNorthToSouth = {}
+
+--- ambush
+kralienStation = nil
+kralienFiend = nil
+kralienFiendCommsMissionSpecific = {}
+ambushState = 0
+ambushStateLieInWait = 0
+ambushStateAskCeaseFire = 1
+ambushStateCeaseFire = 2
+ambushStateAllOutAttack = 3
+ambushStateDuel = 4
+ambushStateResolved = 5
+ambushStateBackToNormal = 6
+ambushStateDone = 7
+
+
+function isShipPerfectlyFine(ship) 
+    if not ship:isValid() then
+        return false
+    end
+
+    if ship:getHull() < ship:getHullMax() then
+        return false
+    end
+    for i=1, ship:getShieldCount() do
+        if ship:getShieldLevel(i) < ship:getShieldMax(i) then
+            return false
+        end
+    end
+    return true
+end

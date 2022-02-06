@@ -3,6 +3,9 @@ require("./69_mymission/comms.lua")
 require("./69_mymission/commerce.lua")
 require("./69_mymission/terrain.lua")
 require("./69_mymission/wormholes.lua")
+require("./69_mymission/globals.lua")
+require("./69_mymission/ambush.lua")
+
 
 local numSectorsPerSide
 local currentMission 
@@ -21,22 +24,6 @@ function hfFreighterSosBlinking(delta)
     end
 end
 
-local function ambush()
-    -- Fiend G5
-    -- MU52 Hornet
-    -- CpuShip():setFaction("Kraylor"):setTemplate("Fiend G5"):setCallSign("VK36"):setPosition(156399, 82567):orderRoaming():setWeaponStorage("Homing", 4)
-
-    -- local numFighters = 6
-    -- for i=1, #numFighters do
-    -- end
-    -- CpuShip():setFaction("Kraylor"):setTemplate("Strikeship"):setCallSign("VK36"):setPosition(156399, 82567):orderRoaming()
-    -- CpuShip():setFaction("Kraylor"):setTemplate("Strikeship"):setCallSign("VK36"):setPosition(156399, 82567):orderRoaming()
-    -- CpuShip():setFaction("Kraylor"):setTemplate("Strikeship"):setCallSign("VK36"):setPosition(156399, 82567):orderRoaming()
-    -- CpuShip():setFaction("Kraylor"):setTemplate("Strikeship"):setCallSign("VK36"):setPosition(156399, 82567):orderRoaming()
-    -- CpuShip():setFaction("Kraylor"):setTemplate("Strikeship"):setCallSign("VK36"):setPosition(156399, 82567):orderRoaming()
-    -- CpuShip():setFaction("Kraylor"):setTemplate("Strikeship"):setCallSign("VK36"):setPosition(156399, 82567):orderRoaming()
-
-end
 
 local mission1_3a_setup_done = false
 local function mission1_3a_goto_miners(delta)
@@ -47,11 +34,8 @@ local function mission1_3a_goto_miners(delta)
         hfFreighter:orderDock(minerHab)
 
         freeport9CommsMissionSpecific = freeport9Comms_m1_3_a --- todo
-        minerHabCommsMissionSpecific = minerHabComms_m1_3_a --- todo
-        hfFreighterCommsMissionSpecific = hfFreighterComms_m1_3_a --- todo
-
-        --- ambush
-
+        minerHabCommsMissionSpecific = minerHabComms_m1_3_a
+        hfFreighterCommsMissionSpecific = hfFreighterComms_m1_3_a
     end
 end
 
@@ -72,7 +56,6 @@ local function mission1_2_lookForSignal(delta)
 
     if not mission1_2_setup_done then
         mission1_2_setup_done = true
-
         freeport9CommsMissionSpecific = freeport9Comms_m1_2
         minerHabCommsMissionSpecific = minerHabComms_m1_2
         hfFreighterCommsMissionSpecific = hfFreighterComms_m1_2
@@ -109,7 +92,11 @@ function myInit()
 
     initializeWormholes()
 
-    player = PlayerSpaceship():setFaction("Human Navy"):setTemplate("Phobos M3"):setCallSign("Stroke 3"):setWarpDrive(true):setCanCombatManeuver(true):setCanSelfDestruct(true)
+
+
+    player = PlayerSpaceship():setFaction("Human Navy"):setTemplate("Phobos M3P"):setCallSign("Stroke 3"):setWarpDrive(true)
+    player:setPosition(156412, 96481)
+
     player.nearExitWormhole = false
     player.nearMapBoundary = false
     
@@ -163,7 +150,7 @@ function myInit()
     hfFreighter = CpuShip():setFaction("Independent"):setTemplate("Garbage Freighter 3"):setCallSign("HF2137"):setPosition(157226, 97278):orderIdle():setCommsFunction(hfFreighterComms)
     hfFreighter.sosBlinkingEnabled = true
     hfFreighter.spottedFriends = false
-    local hfFreighterX, hfFreighterY = hfFreighter:getPosition()
+    hfFreighter.initialX, hfFreighter.initialY = hfFreighter:getPosition()
 
     --- jump cruiser picks up hfFreighter
     -- jumpC = CpuShip():setFaction("Independent"):setTemplate("Jump Carrier"):setCallSign("JC"):setPosition(146708, 142000)
@@ -179,14 +166,16 @@ function myInit()
 
     clearNebulasInRadius(minerHabX, minerHabY, 10000)
     clearNebulasInRadius(freeport9X, freeport9Y, 10000)
-    clearNebulasInRadius(hfFreighterX, hfFreighterY, 10000)
+    clearNebulasInRadius(hfFreighter.initialX, hfFreighter.initialY, 10000)
 
     createInRing(Nebula, 5, 8000, 10000, minerHabX, minerHabY)
-    createInRing(Nebula, 5, 8000, 10000, hfFreighterX, hfFreighterY)
+    createInRing(Nebula, 10, 8000, 10000, hfFreighter.initialX, hfFreighter.initialY)
 
     combNebulas()
 
     initializeCommerce()
+
+    ambushInit()
 end
 
 
@@ -219,6 +208,7 @@ function myUpdate(delta)
         currentMission(delta)
     end
 
+
     wormholePlayerNearingExitPoint(delta)
     wormholeRotate(delta)
 
@@ -230,4 +220,6 @@ function myUpdate(delta)
     updateCommerce(delta)
 
     hfFreighterSosBlinking(delta)
+
+    ambushUpdate(delta)
 end
