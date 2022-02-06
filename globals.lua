@@ -9,10 +9,13 @@ stroke4 = nil
 minerHab = nil
 
 hfFreighter = nil
+sosSquawkEnabled = nil
+
 
 
 freeport9CommsMissionSpecific = nil
 minerHabCommsMissionSpecific = nil
+hfFreighterCommsMissionSpecific = nil
 
 northExitWh = nil
 southExitWh = nil

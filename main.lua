@@ -4,12 +4,13 @@ require("./69_mymission/commerce.lua")
 require("./69_mymission/terrain.lua")
 require("./69_mymission/wormholes.lua")
 
-local currentMission
 local numSectorsPerSide
+local currentMission 
 
-
-
-function hfFreighterSquawk(delta)
+function hfFreighterSosBlinking(delta)
+    if not hfFreighter.sosBlinkingEnabled then
+        return
+    end
     blips = {1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0}
     currBlip = math.floor(getScenarioTime() * 4) % #blips
 
@@ -20,22 +21,74 @@ function hfFreighterSquawk(delta)
     end
 end
 
-local mission1_2_setup_done = false
-local function mission1_2_body(delta)
+local function ambush()
+    -- Fiend G5
+    -- MU52 Hornet
+    -- CpuShip():setFaction("Kraylor"):setTemplate("Fiend G5"):setCallSign("VK36"):setPosition(156399, 82567):orderRoaming():setWeaponStorage("Homing", 4)
 
-    if not mission1_2_setup_done then
-        mission1_2_setup_done = true
+    -- local numFighters = 6
+    -- for i=1, #numFighters do
+    -- end
+    -- CpuShip():setFaction("Kraylor"):setTemplate("Strikeship"):setCallSign("VK36"):setPosition(156399, 82567):orderRoaming()
+    -- CpuShip():setFaction("Kraylor"):setTemplate("Strikeship"):setCallSign("VK36"):setPosition(156399, 82567):orderRoaming()
+    -- CpuShip():setFaction("Kraylor"):setTemplate("Strikeship"):setCallSign("VK36"):setPosition(156399, 82567):orderRoaming()
+    -- CpuShip():setFaction("Kraylor"):setTemplate("Strikeship"):setCallSign("VK36"):setPosition(156399, 82567):orderRoaming()
+    -- CpuShip():setFaction("Kraylor"):setTemplate("Strikeship"):setCallSign("VK36"):setPosition(156399, 82567):orderRoaming()
+    -- CpuShip():setFaction("Kraylor"):setTemplate("Strikeship"):setCallSign("VK36"):setPosition(156399, 82567):orderRoaming()
+
+end
+
+local mission1_3a_setup_done = false
+local function mission1_3a_goto_miners(delta)
+
+    if not mission1_3a_setup_done then
+        mission1_3a_setup_done = true
+
+        hfFreighter:orderDock(minerHab)
+
+        freeport9CommsMissionSpecific = freeport9Comms_m1_3_a --- todo
+        minerHabCommsMissionSpecific = minerHabComms_m1_3_a --- todo
+        hfFreighterCommsMissionSpecific = hfFreighterComms_m1_3_a --- todo
+
+        --- ambush
+
     end
+end
 
-    freeport9CommsMissionSpecific = freeport9Comms_m1_2
+local mission1_3b_setup_done = false
+local function mission1_3b_jump_carrier(delta)
 
-    minerHabCommsMissionSpecific = minerHabComms_m1_2
+    if not mission1_3b_setup_done then
+        mission1_3b_setup_done = true
 
-    hfFreighterSquawk(delta)
+        --- todo
+    end
 end
 
 
-local function mission1_1_pre(delta)
+
+local mission1_2_setup_done = false
+local function mission1_2_lookForSignal(delta)
+
+    if not mission1_2_setup_done then
+        mission1_2_setup_done = true
+
+        freeport9CommsMissionSpecific = freeport9Comms_m1_2
+        minerHabCommsMissionSpecific = minerHabComms_m1_2
+        hfFreighterCommsMissionSpecific = hfFreighterComms_m1_2
+    end
+
+    if hfFreighter.gotoMiners then
+        currentMission = mission1_3a_goto_miners
+
+    elseif hfFreighter.awaitJumpCarrier then
+        freeport9CommsMissionSpecific = freeport9Comms_m1_3_b
+        currentMission = mission1_3b_jump_carrier
+    end
+end
+
+
+local function mission1_1_prologue(delta)
 
     freeport9CommsMissionSpecific = freeport9Comms_m1_1
 
@@ -44,55 +97,39 @@ local function mission1_1_pre(delta)
             getPlayerShip(-1),
             _("Stroke 3, report to Freeport 9 command.")
         )
-        currentMission = mission1_2_body
+        currentMission = mission1_2_lookForSignal
     end
 
 end
 
 
 function myInit()
-    -- currentMission = mission1_1_pre
-    currentMission = mission1_2_body
-
+    -- currentMission = mission1_1_prologue
+    currentMission = mission1_2_lookForSignal
 
     initializeWormholes()
 
-    player = PlayerSpaceship():setFaction("Human Navy"):setTemplate("Phobos T3"):setCallSign("Stroke 3"):setWarpDrive(true):setCanCombatManeuver(true)
+    player = PlayerSpaceship():setFaction("Human Navy"):setTemplate("Phobos M3"):setCallSign("Stroke 3"):setWarpDrive(true):setCanCombatManeuver(true):setCanSelfDestruct(true)
     player.nearExitWormhole = false
     player.nearMapBoundary = false
     
     freeport9 = SpaceStation():setTemplate("Medium Station"):setFaction("Human Navy"):setCallSign("Freeport 9"):setPosition(2000, 2000):setHeading(270):setCommsFunction(freeport9Comms)
     local freeport9X, freeport9Y = freeport9:getPosition()
 
-
-    -- table.insert(friendlyList, setCirclePos(CpuShip():setTemplate(friendlyShip[friendlyShipIndex]):setRotation(a):setFaction("Human Navy"):orderRoaming():setScanned(true), 0, 0, a + random(-5, 5), d + random(-100, 100)))
-
-
-
     --- TODO: less probes??..
-    stroke1 = CpuShip():setFaction("Human Navy"):setTemplate("Phobos T3"):setCallSign("Stroke 1"):setScanned(true):setPosition(-1000, 0):setHeading(270):setCommsFunction(stroke1Comms):orderDefendTarget(freeport9):setWarpDrive(true)
+    stroke1 = CpuShip():setFaction("Human Navy"):setTemplate("Phobos M3"):setCallSign("Stroke 1"):setScanned(true):setPosition(-1000, 0):setHeading(270):setCommsFunction(stroke1Comms):orderDefendTarget(freeport9):setWarpDrive(true)
     stroke1:setImpulseMaxSpeed(stroke1:getImpulseMaxSpeed() * 0.9) --- so that escorts can catch up
     stroke1.talked = false
     --- TODO: should be a way to make this guy like us.
     stroke1.likesPlayer = false
 
-    stroke2 = CpuShip():setFaction("Human Navy"):setTemplate("Phobos T3"):setCallSign("Stroke 2"):setScanned(true):setPosition(-500, -500):setHeading(270):setCommsFunction(stroke2Comms):orderFlyFormation(stroke1, -500, 500):setWarpDrive(true)
+    stroke2 = CpuShip():setFaction("Human Navy"):setTemplate("Phobos M3"):setCallSign("Stroke 2"):setScanned(true):setPosition(-500, -500):setHeading(270):setCommsFunction(stroke2Comms):orderFlyFormation(stroke1, -500, 500):setWarpDrive(true)
     stroke2.talked = false
     stroke2.likesPlayer = false
 
-    stroke4 = CpuShip():setFaction("Human Navy"):setTemplate("Phobos T3"):setCallSign("Stroke 4"):setScanned(true):setPosition(-500, 500):setHeading(270):setCommsFunction(stroke4Comms):orderFlyFormation(stroke1, -500, -500):setWarpDrive(true)
+    stroke4 = CpuShip():setFaction("Human Navy"):setTemplate("Phobos M3"):setCallSign("Stroke 4"):setScanned(true):setPosition(-500, 500):setHeading(270):setCommsFunction(stroke4Comms):orderFlyFormation(stroke1, -500, -500):setWarpDrive(true)
     stroke4.talked = false
     stroke4.likesPlayer = false
-
-    local sectorSize = 10000
-
-    -- for n = 1, 20 do
-    --     Nebula():setPosition(random(-4*sectorSize, 4*sectorSize), random(-2*sectorSize, 2*sectorSize))
-    -- end
-
-    -- local zone = Zone():setPoints(0, 0, 500, 100, 600, 700, 300, 400)
-
-
 
     minerHab = SpaceStation():setTemplate("Small Station"):setFaction("Independent"):setCallSign("Hab 220"):setPosition(138263, 64230):setRotation(random(0, 360)):setCommsFunction(minerHabComms)
     SpaceStation():setTemplate("Small Station"):setFaction("Independent"):setCallSign("Hab 218"):setPosition(135338, 64184):setRotation(random(0, 360)):setCommsFunction(minerHabNope1Comms)
@@ -101,20 +138,13 @@ function myInit()
 
     local minerHabX, minerHabY = minerHab:getPosition()
 
-    --- add ElectricExplosionEffect to some nebulas
-
     --- todo: chat for these ships
     CpuShip():setFaction("Independent"):setTemplate("Transport3x5"):setCallSign("SS5"):setPosition(136479, 64503)
     CpuShip():setFaction("Independent"):setTemplate("Transport1x5"):setCallSign("NC9"):setPosition(135424, 64701)
     CpuShip():setFaction("Independent"):setTemplate("Tug"):setCallSign("UTI6"):setPosition(136243, 66132)
 
-
-
-
     --- todo: station comms
     bobsStation = SpaceStation():setTemplate("Small Station"):setFaction("Independent"):setCallSign("Bob's"):setPosition(144785, -93706)
-
-
 
     --- blockade due to some anomaly
     --- but navy ships want them to let you through because you are also navy (rep +- miners)
@@ -129,13 +159,23 @@ function myInit()
     CpuShip():setFaction("Human Navy"):setTemplate("MU52 Hornet"):setCallSign("BDF13"):setPosition(-81986, 142951):orderDefendTarget(bdf01):setCommsFunction(randomizedBdfCommsFunc()):setScanned(true)
     CpuShip():setFaction("Human Navy"):setTemplate("MU52 Hornet"):setCallSign("BDF14"):setPosition(-81014, 142838):orderDefendTarget(bdf01):setCommsFunction(randomizedBdfCommsFunc()):setScanned(true)
 
-
-    hfFreighter = CpuShip():setFaction("Independent"):setTemplate("Transport5x1"):setCallSign("HF2137"):setPosition(146708, 142710)
+    --- todo: anomalous description and changing science readings.
+    hfFreighter = CpuShip():setFaction("Independent"):setTemplate("Garbage Freighter 3"):setCallSign("HF2137"):setPosition(157226, 97278):orderIdle():setCommsFunction(hfFreighterComms)
+    hfFreighter.sosBlinkingEnabled = true
+    hfFreighter.spottedFriends = false
     local hfFreighterX, hfFreighterY = hfFreighter:getPosition()
 
+    --- jump cruiser picks up hfFreighter
+    -- jumpC = CpuShip():setFaction("Independent"):setTemplate("Jump Carrier"):setCallSign("JC"):setPosition(146708, 142000)
+    -- hfFreighter:orderDock(jumpC)
+
+
+    --- todo: add ElectricExplosionEffect to some nebulas
+    --- todo: add asteroids and visualasteroids whatever they are
 
     numSectorsPerSide = 20
     initializeNebulas(60, 0, 0, numSectorsPerSide)
+
 
     clearNebulasInRadius(minerHabX, minerHabY, 10000)
     clearNebulasInRadius(freeport9X, freeport9Y, 10000)
@@ -184,5 +224,10 @@ function myUpdate(delta)
 
     playerNearingMapBoundary(delta)
 
+    --- todo : add nebula animation ("waviness")
+    --- todo: add nebula animation ("storms")
+
     updateCommerce(delta)
+
+    hfFreighterSosBlinking(delta)
 end

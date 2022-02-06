@@ -1,12 +1,6 @@
 require("./69_mymission/globals.lua")
 
 
-
-function freeport9Comms()
-    setCommsMessage(_("Freeport 9 here."))
-    freeport9CommsMissionSpecific()
-end
-
 function stroke1Comms()
     setCommsMessage(_("Eyes open, Stroke 3. I don't want to end up dead because you were daydreaming. Stroke 1 out."))
     addCommsReply(_("Aye, sir."))
@@ -115,13 +109,6 @@ function stroke4Comms()
 end
 
 function minerHabComms()
-    setCommsMessage(_("What?"))
-    addCommsReply(
-        _("Nothing."),
-        function()
-            setCommsMessage(_("Aight"))
-        end
-    )
     minerHabCommsMissionSpecific()
 end
 
@@ -151,6 +138,91 @@ function minerHabNope3Comms()
             )
         end
     )
+end
+
+
+function hfFreighterComms()
+    setCommsMessage(_("<Channel open, but no reply>"))
+    hfFreighterCommsMissionSpecific()
+end
+
+hfFreighterComms_m1_2_inner = function()
+    setCommsMessage(_("See, a... saboteur... yes, a saboteur got on board and activated the self-destruct sequence. We managed to stop them but our jump drive got damaged. " ..
+        "And ehm... we're running low on the oxygen, so vital to human survival, yes. We need to get to a human station, and soon. Can you take us there?"))
+    addCommsReply(
+        _("We will escort you to nearby miner's habitations."),
+        function()
+            hfFreighter.gotoMiners = true
+            setCommsMessage(_("Ah, that's perfect! Thank you. Can't wait to breathe more oxygen, yes! Setting course now."))
+        end
+    )
+    addCommsReply(
+        _("We will arrange a jump carrier from Freeport 9."),
+        function()
+            hfFreighter.awaitJumpCarrier = true
+            setCommsMessage(_("Yes! Freeport 9. A lot of traffic there these days. Please take us there soon. We will await for the jump carrier here, yes. Please arrange it."))
+        end
+    )
+end
+
+hfFreighterComms_m1_2 = function()
+    addCommsReply(
+        _("HF2137, report in!"),
+        function()
+            setCommsMessage(_("<No reply, but you can hear someone breathing on the other side>"))
+            addCommsReply(
+                _("We can hear you breathing, you know?"),
+                function()
+                    setCommsMessage(_("... What do you mean breathing? Ah, yes, you mean human breathing, is what you mean... Yes, I was breathing, thank you very much. " ..
+                        "Listen, I have a favor to ask."))
+                        addCommsReply(
+                            _("Yes?"),
+                            function()
+                                hfFreighterComms_m1_2_inner()
+                            end
+                        )
+                end
+            )
+            addCommsReply(
+                _("This is the Navy, are there any injured?"),
+                function()
+                    setCommsMessage(_("The Navy?... Meaning more Humans? That's right, it's the Human Navy... Why ask?"))
+                    addCommsReply(
+                        _("You're transmitting S.O.S. using your transponder."),
+                        function()
+                            hfFreighter.sosBlinkingEnabled = false
+                            hfFreighter:setCallSign("HF2137")
+                            setCommsMessage(_("What? Ah... that... Everything is fine. It's just broken, see, yes? Let me fix it really quick. " ..
+                                "Listen, I have a favor to ask."))
+                            addCommsReply(
+                                _("Yes?"),
+                                function()
+                                    hfFreighterComms_m1_2_inner()
+                                end
+                            )
+                        end
+                    )
+                    addCommsReply(
+                        _("Just worried. Tell me... souls on board?"),
+                        function()
+                            setCommsMessage(_("Souls? Let me check... only me, yes. Listen, I have a favor to ask."))
+                            addCommsReply(
+                                _("Yes?"),
+                                function()
+                                    hfFreighterComms_m1_2_inner()
+                                end
+                            )
+                        end
+                    )
+                end
+            )
+        end
+    )
+end
+
+function freeport9Comms()
+    setCommsMessage(_("Freeport 9 here."))
+    freeport9CommsMissionSpecific()
 end
 
 freeport9Comms_m1_1 = function()
@@ -184,7 +256,24 @@ function freeport9Comms_m1_2()
     )
 end
 
+
+minerHabComms_m1_3_a = function()
+    addCommsReply(
+        _("We've found a damaged freighter."),
+        function()
+            setCommsMessage(_("Good. And?"))
+            addCommsReply(
+                _("They will dock with you for emergency repairs."),
+                function()
+                    setCommsMessage(_("We will gladly help a fellow civilian."))
+                end
+            )
+        end
+    )
+end
+
 minerHabComms_m1_2 = function()
+    setCommsMessage(_("What?"))
     addCommsReply(
         _("Anything unusual happening lately?"),
         function()
@@ -192,12 +281,12 @@ minerHabComms_m1_2 = function()
             addCommsReply(
                 _("Anything else?"),
                 function()
-                    setCommsMessage(_("We detected faint lifeform readings about 2 sectors away, bearing 090, " ..
-                        "but it's not one of ours."))
+                    setCommsMessage(_("We detected faint lifeform readings from " .. hfFreighter:getSectorName() ..
+                        ", but it's not one of ours."))
                     addCommsReply(
                         _("Any idea what could be there?"),
                         function()
-                            setCommsMessage(_("Probably some exotic species, you know, with five legs and three heads... "..
+                            setCommsMessage(_("Probably some exotic species, you know, with six legs and three heads... "..
                                 "I don't know, that's why we called you! Now, if you excuse me..."))
                         end
                     )
