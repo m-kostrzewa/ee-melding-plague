@@ -7,91 +7,254 @@ local stateEgressSystem = 3
 local stateUnstuck = 8
 local stateDuringCombat = 9
 
-function randomCommerceFreighterShipCommsFunc()
+local function requestDetailedItineraryComms()
+    local tradeRoute = comms_target.tradeRoute
+    local tradeRouteStrs = {}
+    for i=1, #tradeRoute do
+        table.insert(tradeRouteStrs, string.format("%s in %s", tradeRoute[i]:getCallSign(), tradeRoute[i]:getSectorName()))
+    end
+    setCommsMessage(_(string.format("Detailed itinerary: \n* %s", table.concat(tradeRouteStrs, ",\n* "))))
+end
+
+local function duringCombatComms()
     rand = irandom(0, 3)
+
+    if rand == 0 then
+        setCommsMessage(_("No time for chit-chat, we're in the middle of combat!"))
+    elseif rand == 1 then
+        setCommsMessage(_("A little bit busy right now!"))
+    elseif rand == 2 then
+        setCommsMessage(_("Engaging enemy."))
+    elseif rand == 3 then
+        setCommsMessage(_("Could use a hand right now..."))
+    end
+end
+
+
+local function randomCommerceFreighterShipCommsFunc()
+    local rand = irandom(0, 3)
     if rand == 0 then
         return function()
-            setCommsMessage(_("This is " .. comms_target:getCallSign() .. " " .. comms_target:getFaction() .. " freighter. We're en route to " .. comms_target.ultimateDestStr .. 
-                ". " .. (#comms_target.tradeRoute - comms_target.currentLeg) .. " waypoints remaining."))
+            if comms_target.state == stateDuringCombat then
+                duringCombatComms()
+            else 
+                setCommsMessage(_(
+                    "This is " .. comms_target:getCallSign() .. " " .. comms_target:getFaction() .. " freighter. " .. 
+                    "We're currently en route to " .. comms_target.tradeRoute[comms_target.currentLeg]:getCallSign() .. 
+                    ". Ultimately, we're departing to " .. comms_target.tradeRoute[#comms_target.tradeRoute]:getCallSign() ..
+                    ". " .. (#comms_target.tradeRoute - comms_target.currentLeg) .. " waypoints remaining."))
+                addCommsReply(
+                    _("Request detailed itinerary."),
+                    requestDetailedItineraryComms
+                )
+            end
         end
     elseif rand == 1 then
         return function()
-            setCommsMessage(_(comms_target:getFaction() .. " transport " .. comms_target:getCallSign() .. " here. Our ultimate destination is " 
-                .. comms_target.ultimateDestStr .. ". We have " .. (#comms_target.tradeRoute - comms_target.currentLeg) .. " more stops in this system."))
+            if comms_target.state == stateDuringCombat then
+                duringCombatComms()
+            else 
+                setCommsMessage(_(
+                    comms_target:getFaction() .. " transport " .. comms_target:getCallSign() .. " here. " .. 
+                    "Our ultimate destination is " .. comms_target.tradeRoute[#comms_target.tradeRoute]:getCallSign() .. 
+                    ". We have " .. (#comms_target.tradeRoute - comms_target.currentLeg) .. " more stops in this system."))
+                addCommsReply(
+                    _("Request detailed itinerary."),
+                    requestDetailedItineraryComms
+                )
+            end
         end
     elseif rand == 2 then
         return function()
-            setCommsMessage(_("I'm the captain of " .. comms_target:getFaction() .. " convoy " .. comms_target:getCallSign() .. ". " ..
-                "We're just passing by this sector. We're on our way to " .. comms_target.ultimateDestStr .. "."))
+            if comms_target.state == stateDuringCombat then
+                duringCombatComms()
+            else 
+                setCommsMessage(_(
+                    "I'm the captain of " .. comms_target:getFaction() .. " convoy " .. comms_target:getCallSign() .. ". " ..
+                    "We're just passing by this sector. We're on our way to " .. comms_target.tradeRoute[#comms_target.tradeRoute]:getCallSign() .. "."))
+                addCommsReply(
+                    _("Request detailed itinerary."),
+                    requestDetailedItineraryComms
+                )
+            end
         end
     elseif rand == 3 then
         return function()
-            setCommsMessage(_("This is " .. comms_target:getCallSign() .. " heavy. We're " .. comms_target:getFaction() .. ". Want anything, speak to my boss."))
+            if comms_target.state == stateDuringCombat then
+                duringCombatComms()
+            else 
+                setCommsMessage(_("This is " .. comms_target:getCallSign() .. ". We're " .. comms_target:getFaction() .. "."))
+                addCommsReply(
+                    _("Request detailed itinerary."),
+                    requestDetailedItineraryComms
+                )
+            end
         end
     end
 end
 
-function randomCommerceEscortShipCommsFunc()
+local function randomCommerceEscortShipCommsFunc()
     rand = irandom(0, 3)
     if rand == 0 then
         return function()
-            setCommsMessage(_("This is " .. comms_target:getCallSign() .. ". I'm escorting " .. comms_target.freighter:getCallSign() .. "."))
+            if comms_target.freighter.state == stateDuringCombat then
+                duringCombatComms()
+            else 
+                setCommsMessage(_("This is " .. comms_target:getCallSign() .. ". I'm escorting " .. comms_target.freighter:getCallSign() .. "."))
+            end
         end
     elseif rand == 1 then
         return function()
-            setCommsMessage(_(comms_target:getCallSign() .. " here. If you want anything, talk to my boss on " .. comms_target.freighter:getCallSign() .. "."))
+            if comms_target.freighter.state == stateDuringCombat then
+                duringCombatComms()
+            else 
+                setCommsMessage(_(comms_target:getCallSign() .. " here. If you want anything, talk to my boss on " .. comms_target.freighter:getCallSign() .. "."))
+            end
         end
     elseif rand == 2 then
         return function()
-            setCommsMessage(_("Just a lowly escort pilot. " .. comms_target:getCallSign() .. " out."))
+            if comms_target.freighter.state == stateDuringCombat then
+                duringCombatComms()
+            else 
+                setCommsMessage(_("Just a lowly escort pilot. " .. comms_target:getCallSign() .. " out."))
+            end
         end
     elseif rand == 3 then
         return function()
-            setCommsMessage(_("Hello. You probably want my boss on " .. comms_target.freighter:getCallSign() .. " ."))
+            if comms_target.freighter.state == stateDuringCombat then
+                duringCombatComms()
+            else 
+                setCommsMessage(_("Hello. You probably want my boss on " .. comms_target.freighter:getCallSign() .. " ."))
+            end
         end
     end
 end
+
+
+local function newDestination(alreadyVisited, thisLeg, ultimateDest)
+    local possibleDestinations = {}
+
+    if thisLeg == freeport9 then
+        for i=1, #habs do
+            table.insert(possibleDestinations, {weight = 10, tgt = habs[i]})
+        end
+
+        if ultimateDest == northExitWh then
+            table.insert(possibleDestinations, {weight = 100, tgt = bobsStation})
+        else 
+            table.insert(possibleDestinations, {weight = 100, tgt = borderStation})
+        end
+    elseif thisLeg == bobsStation then
+        if ultimateDest == northExitWh then
+            table.insert(possibleDestinations, {weight = 100, tgt = northExitWh})
+        else 
+            table.insert(possibleDestinations, {weight = 100, tgt = freeport9})
+        end
+    elseif thisLeg == borderStation then
+        if ultimateDest == southExitWh then
+            table.insert(possibleDestinations, {weight = 100, tgt = southExitWh})
+        else 
+            table.insert(possibleDestinations, {weight = 100, tgt = freeport9})
+        end
+    else --- miner hab
+        for i=1, #habs do
+            if thisLeg.isEast == habs[i].isEast then
+                table.insert(possibleDestinations, {weight = 10, tgt = habs[i]})
+            end
+        end
+        table.insert(possibleDestinations, {weight = 60, tgt = freeport9})
+    end
+
+    for i=1, #alreadyVisited do
+        if alreadyVisited[i] ~= freeport9 then --- freeport9 can be visited multiple times
+            for j=1, #possibleDestinations do
+                if possibleDestinations[j].tgt == alreadyVisited[i] then
+                    table.remove(possibleDestinations, j)
+                    break
+                end
+            end
+        end
+    end
+
+    local totalWeight = 0
+    for i=1, #possibleDestinations do
+        totalWeight = totalWeight + possibleDestinations[i].weight
+    end
+
+    local roulette = irandom(1, totalWeight)
+    local nextDest = nil
+    for i=1, #possibleDestinations do
+        if possibleDestinations[i].weight >= roulette then
+            nextDest = possibleDestinations[i].tgt
+            break
+        else
+            roulette = roulette - possibleDestinations[i].weight
+        end
+    end
+    
+    return nextDest
+end
+
+local function makeTradeRoute(startFrom, ultimateDest)
+
+    local currentLeg = startFrom
+    local alreadyVisited = {currentLeg}
+    local tradeRoute = {}
+    while true do
+        local newDest = newDestination(alreadyVisited, currentLeg, ultimateDest)
+        currentLeg = newDest
+        table.insert(alreadyVisited, currentLeg)
+        table.insert(tradeRoute, currentLeg)
+        if newDest == ultimateDest then
+            break
+        end
+    end
+
+
+
+    return tradeRoute
+end
+
 
 function initializeCommerce()
     commerceFreighters = {}
 
-    tradeRouteSouthToNorth = {}
-    tradeRouteSouthToNorth[0] = borderStation
-    tradeRouteSouthToNorth[1] = freeport9
-    tradeRouteSouthToNorth[2] = bobsStation
-    tradeRouteSouthToNorth[3] = northExitWh
+    spawnCommerceFleet(-80728, 140307, makeTradeRoute(southExitWh, northExitWh))
+    spawnCommerceFleet(1326, 8230, makeTradeRoute(borderStation, northExitWh))
+    spawnCommerceFleet(-257, 1722, makeTradeRoute(freeport9, southExitWh))
+    spawnCommerceFleet(-57647, 127520, makeTradeRoute(borderStation, northExitWh))
+    spawnCommerceFleet(-10930, 38434, makeTradeRoute(borderStation, northExitWh))
+    spawnCommerceFleet(-45973, 78147, makeTradeRoute(borderStation, northExitWh))
+    spawnCommerceFleet(-47000, 80997, makeTradeRoute(borderStation, southExitWh))
+    spawnCommerceFleet(-27702, 49339, makeTradeRoute(borderStation, southExitWh))
 
-    tradeRouteNorthToSouth = {}
-    tradeRouteNorthToSouth[0] = bobsStation
-    tradeRouteNorthToSouth[1] = freeport9
-    tradeRouteNorthToSouth[2] = borderStation
-    tradeRouteNorthToSouth[3] = southExitWh
+    spawnCommerceFleet(42466, -21290, makeTradeRoute(bobsStation, northExitWh))
+    spawnCommerceFleet(46996, -31030, makeTradeRoute(bobsStation, northExitWh))
+    spawnCommerceFleet(91390, -62287, makeTradeRoute(borderStation, northExitWh))
+    spawnCommerceFleet(141447, -89920, makeTradeRoute(northExitWh, southExitWh))
+    spawnCommerceFleet(84004, -33904, makeTradeRoute(bobsStation, southExitWh))
+    spawnCommerceFleet(500, -1722, makeTradeRoute(freeport9, northExitWh))
 
-    spawnCommerceFleet(-80728, 140307, tradeRouteSouthToNorth, 0)
-    spawnCommerceFleet(1326, 8230, tradeRouteSouthToNorth, 1)
-    spawnCommerceFleet(-40743, 76231, tradeRouteNorthToSouth, 2)
-    spawnCommerceFleet(-47000, 80997, tradeRouteNorthToSouth, 2)
-    spawnCommerceFleet(-27702, 49339, tradeRouteNorthToSouth, 2)
-    spawnCommerceFleet(-57647, 127520, tradeRouteSouthToNorth, 1)
-    spawnCommerceFleet(-10930, 38434, tradeRouteSouthToNorth, 1)
-    spawnCommerceFleet(-45973, 78147, tradeRouteSouthToNorth, 1)
-
-    spawnCommerceFleet(42466, -21290, tradeRouteNorthToSouth, 1)
-    spawnCommerceFleet(46996, -31030, tradeRouteNorthToSouth, 1)
-    spawnCommerceFleet(91390, -62287, tradeRouteSouthToNorth, 2)
-    spawnCommerceFleet(141447, -89920, tradeRouteNorthToSouth, 0)
-    spawnCommerceFleet(84004, -33904, tradeRouteNorthToSouth, 1)
-
-    for i=1, 6 do
-        local hx, hy = habs[irandom(1, #habs)]:getPosition()
+    for i=1, 10 do
+        local aHab = habs[irandom(1, #habs)]
+        local hx, hy = aHab:getPosition()
         local dx, dy = vectorFromAngle(irandom(0, 360), 1000)
-        spawnCommerceFleet(hx + dx, hy + dy, {}, irandom(1, #habs))
+        if irandom(1, 100) < 50 then
+            spawnCommerceFleet(hx + dx, hy + dy, makeTradeRoute(aHab, northExitWh))
+        else
+            spawnCommerceFleet(hx + dx, hy + dy, makeTradeRoute(aHab, southExitWh))
+        end
     end
 end
 
 
-function updateCommerceFleet(delta, freighter)
+local function updateCommerceFleet(delta, freighter)
     if not freighter:isValid() then
+        for i=1, #freighter.escorts do
+            if freighter.escorts[i]:isValid() then 
+                freighter.escorts[i]:orderFlyTowards(freighter.tradeRoute[#freighter.tradeRoute]:getPosition())
+            end
+        end
         return
     end
 
@@ -117,31 +280,6 @@ function updateCommerceFleet(delta, freighter)
             --- still fighting!
             --- early return so we don't execute the rest of AI "stack"
             return
-        end
-    end
-    
-    if freighter.currentLeg > #freighter.tradeRoute then
-        --- hardcode: assume we are miners, randomize new route.
-        print("[Commerce] Randomizing new miner trade route, num habs ", #habs)
-        local newTradeRoute = {}
-        newTradeRoute[0] = habs[irandom(1, #habs)]
-        newTradeRoute[1] = habs[irandom(1, #habs)]
-        newTradeRoute[2] = habs[irandom(1, #habs)]
-        newTradeRoute[3] = habs[irandom(1, #habs)]
-
-        freighter.tradeRoute = newTradeRoute
-        freighter.currentLeg = 0
-
-        freighter.ultimateDestStr = "somewhere"
-        local ultimateDest = freighter.tradeRoute[#freighter.tradeRoute]
-        if ultimateDest.typeName == "WormHole" then
-            if ultimateDest == southExitWh then
-                freighter.ultimateDestStr = "Human space"
-            elseif ultimateDest == northExitWh then
-                freighter.ultimateDestStr = "Independent space"
-            end
-        elseif ultimateDest.typeName == "SpaceStation" then
-            freighter.ultimateDestStr = ultimateDest:getCallSign()
         end
     end
 
@@ -220,7 +358,7 @@ function updateCommerce(delta)
     end
 end
 
-function spawnCommerceFleet(spawnLocationX, spawnLocationY, tradeRoute, startingLeg)
+function spawnCommerceFleet(spawnLocationX, spawnLocationY, tradeRoute)
 
     local factions = {
         "Independent",
@@ -265,7 +403,7 @@ function spawnCommerceFleet(spawnLocationX, spawnLocationY, tradeRoute, starting
     ElectricExplosionEffect():setPosition(spawnLocationX, spawnLocationY):setSize(600):setOnRadar(true)
 
     freighter.tradeRoute = tradeRoute
-    freighter.currentLeg = startingLeg
+    freighter.currentLeg = 1
     freighter.state = stateBeginNewLeg
     freighter.stateBeforeCombat = nil
     freighter.escorts = {}
@@ -332,7 +470,11 @@ function spawnCommerceFleet(spawnLocationX, spawnLocationY, tradeRoute, starting
         end
     end
 
-    print("[Commerce] Spawned fleet " .. freighter:getCallSign() .. " with " .. escortCount .. " escorts")
+    local tradeRouteStrs = {}
+    for i=1, #tradeRoute do
+        table.insert(tradeRouteStrs, tradeRoute[i]:getCallSign())
+    end
+    print("[Commerce] Spawned fleet " .. freighter:getCallSign() .. " with " .. escortCount .. " escorts, waypoints: ", table.concat(tradeRouteStrs, ", "))
 end
 
 function maybeRespawnCommerceFleet(wormhole, teleportee)
@@ -345,11 +487,11 @@ function maybeRespawnCommerceFleet(wormhole, teleportee)
             if wormhole == southExitWh then
                 print("[Commerce] Respawning commerce fleet at north wormwhole")
                 spawnAtWh = northExitWh
-                tradeRoute = tradeRouteNorthToSouth
+                tradeRoute = makeTradeRoute(northExitWh, southExitWh)
             else 
                 print("[Commerce] Respawning commerce fleet at south wormwhole")
                 spawnAtWh = southExitWh 
-                tradeRoute = tradeRouteSouthToNorth
+                tradeRoute = makeTradeRoute(southExitWh, northExitWh)
             end
             local wx, wy = spawnAtWh:getPosition()
             local dx, dy = vectorFromAngle(random(0,360),random(3500,4000))

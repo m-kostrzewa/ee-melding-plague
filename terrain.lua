@@ -1,5 +1,7 @@
 require("utils.lua")
 
+allStationsRefs = {}
+
 
 function evalParabola(a, b, c, x0, y0, x)
     return a*(x-x0)*(x-x0) + b*(x-x0) + c+y0
@@ -75,26 +77,42 @@ function combNebulas()
 end
 
 function initializeMinerHabs()
+    minerHab = SpaceStation():setTemplate("Small Station"):setFaction("Independent"):setCallSign("Gas Refinery East"):setPosition(138263, 64230):setRotation(random(0, 360)):setCommsFunction(minerHabComms)
+    minerHab.isEast = true
+
     local habsToCreate = {
-        {name = "Hab 218", x = 135338, y = 64184}, 
-        {name = "Hab 221", x = 136087, y = 66575}, 
-        {name = "Hab 219", x = 137619, y = 63725}, 
-        {name = "Hab 154", x = 66430, y = 52186}, 
-        {name = "Hab 155", x = 65571, y = 51498}, 
-        {name = "Hab 705", x = 108774, y = 31594}, 
-        {name = "Hab 801", x = 86763, y = 88371}, 
-        {name = "Hab 51", x = 25155, y = 15336}, 
-        {name = "Hab 50", x = 26832, y = 16153}, 
-        {name = "Hab 52", x = 24513, y = 17242}, 
-        {name = "Hab 301", x = 68931, y = 120334}, 
-        {name = "Hab 181", x = -34602, y = -11028}, 
-        {name = "Hab 183", x = -33820, y = -13451}, 
+        {name = "Miner's Habitat \'Delta\'", x = 37103, y = 53079, isEast = true}, 
+        {name = "NatGas Auction house", x = 108774, y = 31594, isEast = true}, 
+        {name = "Zeta QA Labs", x = 86763, y = 88371, isEast = true}, 
+        {name = "CO2 Exchange", x = 25155, y = 15336, isEast = true}, 
+        {name = "Lambda Smokestack", x = 68931, y = 120334, isEast = true}, 
+        {name = "Tau Fuel Enrichment", x = -34602, y = -11028, isEast = false}, 
+        {name = "Miner's Barracks \'Omega\'", x = -85699, y = -5821, isEast = false}, 
+        {name = "Gas Refinery West", x = -139992, y = -8345, isEast = false}, 
     }
     for i=1, #habsToCreate do
         local entry = habsToCreate[i] 
         print("[Terrain] Spawning ", entry.name)
 
         local aHab = SpaceStation():setTemplate("Small Station"):setFaction("Independent"):setCallSign(entry.name):setPosition(entry.x, entry.y):setRotation(random(0, 360)):setCommsFunction(randomizedHabCommsFunc())
+        aHab.isEast = entry.isEast
         table.insert(habs, aHab)
+    end
+
+    table.insert(habs, minerHab)
+end
+
+function rememberAllStations()
+    local allObjs = getAllObjects()
+    for i=1, #allObjs do
+        if allObjs[i].typeName == "SpaceStation" then
+            table.insert(allStationsRefs, allObjs[i]) 
+        end
+    end
+end
+
+function rotateStations(delta)
+    for i=1, #allStationsRefs do
+        allStationsRefs[i]:setRotation(getScenarioTime() * 3)
     end
 end

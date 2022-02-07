@@ -1,7 +1,7 @@
 require("./69_mymission/globals.lua")
 
 function initializeWormholes()
-    northExitWh = WormHole():setPosition(143898, -99701):setTargetPosition(170960, -132962)
+    northExitWh = WormHole():setPosition(143898, -99701):setTargetPosition(170960, -132962):setCallSign("Independent Space")
     northExitWh:onTeleportation(function(self, teleportee)
         if teleportee.typeName == "PlayerSpaceship" then
             victory("Independent")
@@ -13,7 +13,7 @@ function initializeWormholes()
         end
     end)
 
-    southExitWh = WormHole():setPosition(-85926, 144838):setTargetPosition(-169718, 193575)
+    southExitWh = WormHole():setPosition(-85926, 144838):setTargetPosition(-169718, 193575):setCallSign("Human Worlds")
     southExitWh:onTeleportation(function(self, teleportee)
         if teleportee.typeName == "PlayerSpaceship" then
             victory("Independent")

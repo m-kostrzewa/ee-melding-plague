@@ -118,18 +118,16 @@ function myInit()
     stroke4.talked = false
     stroke4.likesPlayer = false
 
-    minerHab = SpaceStation():setTemplate("Small Station"):setFaction("Independent"):setCallSign("Hab 220"):setPosition(138263, 64230):setRotation(random(0, 360)):setCommsFunction(minerHabComms)
-    local minerHabX, minerHabY = minerHab:getPosition()
 
     --- todo: station comms
-    bobsStation = SpaceStation():setTemplate("Small Station"):setFaction("Independent"):setCallSign("Bob's"):setPosition(144785, -93706)
+    bobsStation = SpaceStation():setTemplate("Small Station"):setFaction("Independent"):setCallSign("Bob's Mega Diner"):setPosition(144785, -93706)
 
     --- blockade due to some anomaly
     --- but navy ships want them to let you through because you are also navy (rep +- miners)
 
     --- todo: station comms
     --- todo: part of this escort can be called for a mission but will lead to different outcome (smugglers pass by border control maybe?)
-    borderStation = SpaceStation():setTemplate("Small Station"):setFaction("Human Navy"):setCallSign("Border station K83"):setPosition(-81260, 140904)
+    borderStation = SpaceStation():setTemplate("Small Station"):setFaction("Human Navy"):setCallSign("Customs"):setPosition(-81260, 140904)
 
     CpuShip():setFaction("Human Navy"):setTemplate("Weapons platform"):setCallSign("BDF88"):setPosition(-80703, 141433):orderRoaming():setCommsFunction(randomizedBdfCommsFunc()):setScanned(true)
 
@@ -152,9 +150,15 @@ function myInit()
     --- todo: add ElectricExplosionEffect to some nebulas
     --- todo: add asteroids and visualasteroids whatever they are
 
+
+    initializeMinerHabs()
+    initializeCommerce()
+    ambushInit()
+
+    local minerHabX, minerHabY = minerHab:getPosition()
+
     numSectorsPerSide = 20
     initializeNebulas(60, 0, 0, numSectorsPerSide)
-
 
     clearNebulasInRadius(minerHabX, minerHabY, 10000)
     clearNebulasInRadius(freeport9X, freeport9Y, 10000)
@@ -165,11 +169,7 @@ function myInit()
 
     combNebulas()
 
-    initializeMinerHabs()
-    initializeCommerce()
-
-    ambushInit()
-
+    rememberAllStations()
 end
 
 
@@ -216,4 +216,6 @@ function myUpdate(delta)
     hfFreighterSosBlinking(delta)
 
     ambushUpdate(delta)
+
+    rotateStations(delta)
 end

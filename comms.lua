@@ -70,7 +70,7 @@ function stroke4Comms()
                 setCommsMessage(_("All systems green... except none of us has any probes left, as you know. The promised equipment didn't arrive. " ..
                     "It's like the Command forgot about us here."))
                 addCommsReply(
-                    _("Badlands outposts are never high on priority list."),
+                    _("Captured outposts are never high on priority list."),
                     function()
                         setCommsMessage(_("Why does the Navy need this base anyways?"))
                         addCommsReply(
@@ -160,7 +160,7 @@ hfFreighterComms_m1_2_inner = function()
     setCommsMessage(_("See, a... saboteur... true, a saboteur got on board and activated the self-destruct sequence. We managed to stop them but our jump drive got damaged. " ..
         "And ehm... we're running low on the oxygen, so vital to human survival, isn't it true? We need to get to a human station, and soon. Can you take us there?"))
     addCommsReply(
-        _("We will escort you to nearby miner's habitations."),
+        _("We will escort you to the nearby " .. minerHab:getCallSign()),
         function()
             hfFreighter.gotoMiners = true
             setCommsMessage(_("Ah, that's perfect! Thank you. Can't wait to breathe more oxygen, true! Setting course now."))
@@ -240,7 +240,7 @@ hfFreighterComms_m1_3_a = function()
     addCommsReply(
         _("HF2137, everything OK?"),
         function()
-            setCommsMessage(_("Yes. Status OK. We keep going to miner habs, as we need to breathe the oxygen and eat food."))
+            setCommsMessage(_("Yes. Status OK. We will keep going to " .. minerHab:getCallSign() .. ", as we need to breathe the oxygen and eat food."))
             addCommsReply(
                 _("What were you doing here anyways?"),
                 function()
@@ -291,7 +291,7 @@ function freeport9Comms_m1_2()
     addCommsReply(
         _("What are my orders, sir?"),
         function()
-            setCommsMessage(_("We received reports on unusual sensor readings not too far from gas miners habitation modules in sector " .. minerHab:getSectorName() .. 
+            setCommsMessage(_("We received reports on unusual sensor readings not too far from " .. minerHab:getCallSign() .. " in sector " .. minerHab:getSectorName() .. 
                 ". Break off from formation and check it out, solo."))
             addCommsReply(
                 _("Aye, sir"),
