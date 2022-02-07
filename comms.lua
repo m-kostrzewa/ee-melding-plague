@@ -112,32 +112,43 @@ function minerHabComms()
     minerHabCommsMissionSpecific()
 end
 
-function minerHabNope1Comms() 
-    setCommsMessage(_("<Channel open, but no resopnse>"))
-end
-function minerHabNope2Comms() 
-    setCommsMessage(_("Go away."))
-end
-function minerHabNope3Comms() 
-    setCommsMessage(_("Yes?"))
-    addCommsReply(
-        _("Hello?"),
-        function()
-            setCommsMessage(_("Who is this?"))
+function randomizedHabCommsFunc()
+    local rand = irandom(0, 3)
+    if rand == 0 then
+        return function()
+            setCommsMessage(_("<Channel open, but no resopnse>"))
+        end
+    elseif rand == 1 then
+        return function()
+            setCommsMessage(_("Go away."))
+        end
+    elseif rand == 2 then
+        return function()
+            setCommsMessage(_("Yes?"))
             addCommsReply(
-                _("The Navy."),
+                _("Hello?"),
                 function()
-                    setCommsMessage(_("<Channel closed by the remote client>"))
-                end
-            )
-            addCommsReply(
-                _("Umm... it's me."),
-                function()
-                    setCommsMessage(_("No, I'm not interested in my ship's extended warranty. Good bye."))
+                    setCommsMessage(_("Who is this?"))
+                    addCommsReply(
+                        _("The Navy."),
+                        function()
+                            setCommsMessage(_("<Channel closed by the remote client>"))
+                        end
+                    )
+                    addCommsReply(
+                        _("Umm... it's me."),
+                        function()
+                            setCommsMessage(_("No, I'm not interested in my ship's extended warranty. Good bye."))
+                        end
+                    )
                 end
             )
         end
-    )
+    elseif rand == 3 then
+        return function()
+            setCommsMessage(_("We don't want Navy types like you in this sector."))
+        end
+    end
 end
 
 

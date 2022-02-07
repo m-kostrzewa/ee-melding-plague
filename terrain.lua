@@ -73,3 +73,27 @@ function combNebulas()
         end
     end
 end
+
+function initializeMinerHabs()
+    local habsToCreate = {
+        {name = "Hab 218", x = 135338, y = 64184}, 
+        {name = "Hab 221", x = 136087, y = 66575}, 
+        {name = "Hab 219", x = 137619, y = 63725}, 
+        {name = "Hab 154", x = 66430, y = 52186}, 
+        {name = "Hab 155", x = 65571, y = 51498}, 
+        {name = "Hab 705", x = 108774, y = 31594}, 
+        {name = "Hab 801", x = 86763, y = 88371}, 
+        {name = "Hab 51", x = 25155, y = 15336}, 
+        {name = "Hab 50", x = 26832, y = 16153}, 
+        {name = "Hab 52", x = 24513, y = 17242}, 
+        {name = "Hab 301", x = 68931, y = 120334}, 
+    }
+
+    for i=1, #habsToCreate do
+        local entry = habsToCreate[i] 
+        print("[Terrain] Spawning ", entry.name)
+
+        local aHab = SpaceStation():setTemplate("Small Station"):setFaction("Independent"):setCallSign(entry.name):setPosition(entry.x, entry.y):setRotation(random(0, 360)):setCommsFunction(randomizedHabCommsFunc())
+        table.insert(habs, aHab)
+    end
+end

@@ -119,16 +119,7 @@ function myInit()
     stroke4.likesPlayer = false
 
     minerHab = SpaceStation():setTemplate("Small Station"):setFaction("Independent"):setCallSign("Hab 220"):setPosition(138263, 64230):setRotation(random(0, 360)):setCommsFunction(minerHabComms)
-    SpaceStation():setTemplate("Small Station"):setFaction("Independent"):setCallSign("Hab 218"):setPosition(135338, 64184):setRotation(random(0, 360)):setCommsFunction(minerHabNope1Comms)
-    SpaceStation():setTemplate("Small Station"):setFaction("Independent"):setCallSign("Hab 221"):setPosition(136087, 66575):setRotation(random(0, 360)):setCommsFunction(minerHabNope2Comms)
-    SpaceStation():setTemplate("Small Station"):setFaction("Independent"):setCallSign("Hab 219"):setPosition(137619, 63725):setRotation(random(0, 360)):setCommsFunction(minerHabNope3Comms)
-
     local minerHabX, minerHabY = minerHab:getPosition()
-
-    --- todo: chat for these ships
-    CpuShip():setFaction("Independent"):setTemplate("Transport3x5"):setCallSign("SS5"):setPosition(136479, 64503)
-    CpuShip():setFaction("Independent"):setTemplate("Transport1x5"):setCallSign("NC9"):setPosition(135424, 64701)
-    CpuShip():setFaction("Independent"):setTemplate("Tug"):setCallSign("UTI6"):setPosition(136243, 66132)
 
     --- todo: station comms
     bobsStation = SpaceStation():setTemplate("Small Station"):setFaction("Independent"):setCallSign("Bob's"):setPosition(144785, -93706)
@@ -173,9 +164,12 @@ function myInit()
 
     combNebulas()
 
+    initializeMinerHabs()
     initializeCommerce()
+    initializeFriendlyProbes()
 
     ambushInit()
+
 end
 
 

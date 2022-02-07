@@ -1,5 +1,12 @@
 require("./69_mymission/globals.lua")
 
+local stateBeginNewLeg = 0
+local stateDuringTransit = 1
+local stateDockedUnpacking = 2
+local stateEgressSystem = 3
+local stateUnstuck = 8
+local stateDuringCombat = 9
+
 function randomCommerceFreighterShipCommsFunc()
     rand = irandom(0, 3)
     if rand == 0 then
@@ -74,11 +81,142 @@ function initializeCommerce()
     spawnCommerceFleet(91390, -62287, tradeRouteSouthToNorth, 2)
     spawnCommerceFleet(141447, -89920, tradeRouteNorthToSouth, 0)
     spawnCommerceFleet(84004, -33904, tradeRouteNorthToSouth, 1)
+
+    for i=1, 6 do
+        local hx, hy = habs[irandom(1, #habs)]:getPosition()
+        local dx, dy = vectorFromAngle(irandom(0, 360), 1000)
+        spawnCommerceFleet(hx + dx, hy + dy, {}, irandom(1, #habs))
+    end
 end
+
+
+function updateCommerceFleet(delta, freighter)
+    if not freighter:isValid() then
+        return
+    end
+
+    local sensorHystheresis = 500.0
+    if freighter.state ~= stateDuringCombat and freighter:areEnemiesInRange(freighter:getShortRangeRadarRange() - sensorHystheresis) then
+        print("[Commerce] " .. freighter:getCallSign() .. " defending")
+
+        freighter.stateBeforeCombat = freighter.state
+        freighter.state = stateDuringCombat
+
+        for i=1, #freighter.escorts do
+            if freighter.escorts[i]:isValid() then 
+                freighter.escorts[i]:orderDefendTarget(freighter)
+            end
+        end
+    end
+
+    if freighter.state == stateDuringCombat then
+        if not freighter:areEnemiesInRange(freighter:getShortRangeRadarRange()) then
+            freighter.state = stateBeginNewLeg
+            print("[Commerce] " .. freighter:getCallSign() .. " standing down")
+        else
+            --- still fighting!
+            --- early return so we don't execute the rest of AI "stack"
+            return
+        end
+    end
+    
+    if freighter.currentLeg > #freighter.tradeRoute then
+        --- hardcode: assume we are miners, randomize new route.
+        print("[Commerce] Randomizing new miner trade route, num habs ", #habs)
+        local newTradeRoute = {}
+        newTradeRoute[0] = habs[irandom(1, #habs)]
+        newTradeRoute[1] = habs[irandom(1, #habs)]
+        newTradeRoute[2] = habs[irandom(1, #habs)]
+        newTradeRoute[3] = habs[irandom(1, #habs)]
+
+        freighter.tradeRoute = newTradeRoute
+        freighter.currentLeg = 0
+
+        freighter.ultimateDestStr = "somewhere"
+        local ultimateDest = freighter.tradeRoute[#freighter.tradeRoute]
+        if ultimateDest.typeName == "WormHole" then
+            if ultimateDest == southExitWh then
+                freighter.ultimateDestStr = "Human space"
+            elseif ultimateDest == northExitWh then
+                freighter.ultimateDestStr = "Independent space"
+            end
+        elseif ultimateDest.typeName == "SpaceStation" then
+            freighter.ultimateDestStr = ultimateDest:getCallSign()
+        end
+    end
+
+    local dest = freighter.tradeRoute[freighter.currentLeg]
+
+    if freighter.state == stateBeginNewLeg then
+        if dest.typeName == "SpaceStation" then
+            print("[Commerce] " .. freighter:getCallSign() .. " beginning new leg to " .. dest:getCallSign())
+            freighter:orderDock(dest)
+            freighter.state = stateDuringTransit
+
+            local angleSeparation = 300.0 / (#freighter.escorts + 1)
+            for i=1, #freighter.escorts do
+                local dx, dy = vectorFromAngle(30.0 + i * angleSeparation, 700)
+                if freighter.escorts[i]:isValid() then 
+                    freighter.escorts[i]:orderFlyFormation(freighter, dx, dy)
+                end
+            end
+        elseif dest.typeName == "WormHole" then
+            print("[Commerce] " .. freighter:getCallSign() .. " eggressing system ")
+            local whx, why = dest:getPosition()
+            freighter:orderFlyTowards(dest:getPosition())
+            freighter.state = stateEgressSystem
+            for i=1, #freighter.escorts do
+                if freighter.escorts[i]:isValid() then 
+                    freighter.escorts[i]:orderFlyTowards(dest:getPosition())
+                end
+            end
+        else
+            print("[Commerce] Invalid target typeName " .. dest.typeName )
+        end
+    end
+
+    if freighter.state == stateDuringTransit and freighter:isDocked(dest)  then
+        local stayTime = irandom(30, 60)
+        print("[Commerce] " .. freighter:getCallSign() .. " docked for " .. stayTime .. " seconds at " .. dest:getCallSign())
+
+        freighter.state = stateDockedUnpacking
+        freighter.nextStateTransitionAt = getScenarioTime() + stayTime
+
+        for i=1, #freighter.escorts do
+            if freighter.escorts[i]:isValid() then
+                freighter.escorts[i]:orderDefendTarget(freighter)    
+            end
+        end
+    end
+
+    --- unstuck logic
+    if getScenarioTime() > freighter.nextPosMeasurementAt then
+        if (freighter.state == stateDuringTransit or freighter.state == stateEgressSystem) and
+            distance(freighter, freighter.lastPosMeasurementX, freighter.lastPosMeasurementY) < 50.0 then
+            print("[Commerce] " .. freighter:getCallSign() .. " unstucking self")
+            freighter.state = stateUnstuck
+            freighter.nextStateTransitionAt = getScenarioTime() + irandom(5, 10)
+            freighter:orderDefendLocation(freighter:getPosition())
+        elseif freighter.state == stateUnstuck and getScenarioTime() > freighter.nextStateTransitionAt then
+            print("[Commerce] " .. freighter:getCallSign() .. " should've unstucked myself")
+            freighter.state = stateBeginNewLeg
+        end
+
+        freighter.lastPosMeasurementX, freighter.lastPosMeasurementY = freighter:getPosition()
+        freighter.nextPosMeasurementAt = getScenarioTime() + irandom(25, 40)
+    end
+
+    if freighter.state == stateDockedUnpacking and getScenarioTime() > freighter.nextStateTransitionAt then
+        print("[Commerce] " .. freighter:getCallSign() .. " departing " .. dest:getCallSign())
+        freighter.state = stateBeginNewLeg
+        freighter.currentLeg = freighter.currentLeg + 1
+    end
+end
+
 
 function updateCommerce(delta)
     for i = 1, #commerceFreighters do
-        commerceFreighters[i].updateFunc()
+        updateCommerceFleet(delta, commerceFreighters[i])
     end
 end
 
@@ -104,7 +242,12 @@ function spawnCommerceFleet(spawnLocationX, spawnLocationY, tradeRoute, starting
         "Goods Freighter 1","Goods Freighter 2","Goods Freighter 3","Goods Freighter 4","Goods Freighter 5",
         "Goods Jump Freighter 3","Goods Jump Freighter 4","Goods Jump Freighter 5",
         "Personnel Freighter 1","Personnel Freighter 2","Personnel Freighter 3","Personnel Freighter 4","Personnel Freighter 5",
-        "Personnel Jump Freighter 3","Personnel Jump Freighter 4","Personnel Jump Freighter 5"
+        "Personnel Jump Freighter 3","Personnel Jump Freighter 4","Personnel Jump Freighter 5",
+
+        --- some quick traffic
+        "Adder MK3", "Adder MK4", "Adder MK5", "Adder MK8", "MT52 Hornet", "MU52 Hornet", "Fighter",
+        "Adder MK3", "Adder MK4", "Adder MK5", "Adder MK8", "MT52 Hornet", "MU52 Hornet", "Fighter",
+        "Adder MK3", "Adder MK4", "Adder MK5", "Adder MK8", "MT52 Hornet", "MU52 Hornet", "Fighter",
     }
     local escortTypes = {
         "Adder MK3", "Adder MK4", "Adder MK5", "Adder MK8", "MT52 Hornet", "MU52 Hornet", "Fighter"
@@ -112,13 +255,6 @@ function spawnCommerceFleet(spawnLocationX, spawnLocationY, tradeRoute, starting
     local escortCallsignFormats =  {
         "%s E %i", "%s-%i", "%s/%i", "%s 0%i"
     }
-
-    local stateBeginNewLeg = 0
-    local stateDuringTransit = 1
-    local stateDockedUnpacking = 2
-    local stateEgressSystem = 3
-    local stateUnstuck = 8
-    local stateDuringCombat = 9
 
     local faction = factions[irandom(1, #factions)]
     local freighterType = freighterTypes[irandom(1, #freighterTypes)]
@@ -139,116 +275,20 @@ function spawnCommerceFleet(spawnLocationX, spawnLocationY, tradeRoute, starting
     freighter.lastPosMeasurementX, freighter.lastPosMeasurementY = freighter:getPosition()
 
     freighter.ultimateDestStr = "somewhere"
-    local ultimateDest = freighter.tradeRoute[#freighter.tradeRoute]
-    if ultimateDest.typeName == "WormHole" then
-        if ultimateDest == southExitWh then
-            freighter.ultimateDestStr = "Human space"
-        elseif ultimateDest == northExitWh then
-            freighter.ultimateDestStr = "Independent space"
+    if #freighter.tradeRoute > 0 then
+        local ultimateDest = freighter.tradeRoute[#freighter.tradeRoute]
+        if ultimateDest.typeName == "WormHole" then
+            if ultimateDest == southExitWh then
+                freighter.ultimateDestStr = "Human space"
+            elseif ultimateDest == northExitWh then
+                freighter.ultimateDestStr = "Independent space"
+            end
+        elseif ultimateDest.typeName == "SpaceStation" then
+            freighter.ultimateDestStr = ultimateDest:getCallSign()
         end
-    elseif ultimateDest.typeName == "SpaceStation" then
-        freighter.ultimateDestStr = ultimateDest:getCallSign()
     end
     
     table.insert(commerceFreighters, freighter)
-
-    freighter.updateFunc = function()
-        if not freighter:isValid() then
-            return
-        end
-
-        local sensorHystheresis = 500.0
-        if freighter.state ~= stateDuringCombat and freighter:areEnemiesInRange(freighter:getShortRangeRadarRange() - sensorHystheresis) then
-            print("[Commerce] " .. freighter:getCallSign() .. " defending")
-
-            freighter.stateBeforeCombat = freighter.state
-            freighter.state = stateDuringCombat
-
-            for i=1, #freighter.escorts do
-                if freighter.escorts[i]:isValid() then 
-                    freighter.escorts[i]:orderDefendTarget(freighter)
-                end
-            end
-        end
-
-        if freighter.state == stateDuringCombat then
-            if not freighter:areEnemiesInRange(freighter:getShortRangeRadarRange()) then
-                freighter.state = stateBeginNewLeg
-                print("[Commerce] " .. freighter:getCallSign() .. " standing down")
-            else
-                --- still fighting!
-                --- early return so we don't execute the rest of AI "stack"
-                return
-            end
-        end
-
-        local dest = freighter.tradeRoute[freighter.currentLeg]
-
-        if freighter.state == stateBeginNewLeg then
-            if dest.typeName == "SpaceStation" then
-                print("[Commerce] " .. freighter:getCallSign() .. " beginning new leg to " .. dest:getCallSign())
-                freighter:orderDock(dest)
-                freighter.state = stateDuringTransit
-
-                local angleSeparation = 300.0 / (#freighter.escorts + 1)
-                for i=1, #freighter.escorts do
-                    local dx, dy = vectorFromAngle(30.0 + i * angleSeparation, 700)
-                    if freighter.escorts[i]:isValid() then 
-                        freighter.escorts[i]:orderFlyFormation(freighter, dx, dy)
-                    end
-                end
-            elseif dest.typeName == "WormHole" then
-                print("[Commerce] " .. freighter:getCallSign() .. " eggressing system ")
-                local whx, why = dest:getPosition()
-                freighter:orderFlyTowards(dest:getPosition())
-                freighter.state = stateEgressSystem
-                for i=1, #freighter.escorts do
-                    if freighter.escorts[i]:isValid() then 
-                        freighter.escorts[i]:orderFlyTowards(dest:getPosition())
-                    end
-                end
-            else
-                print("[Commerce]  Invalid target typeName " .. dest.typeName )
-            end
-        end
-
-        if freighter.state == stateDuringTransit and freighter:isDocked(dest)  then
-            local stayTime = irandom(30, 60)
-            print("[Commerce] " .. freighter:getCallSign() .. " docked for " .. stayTime .. " seconds at " .. dest:getCallSign())
-
-            freighter.state = stateDockedUnpacking
-            freighter.nextStateTransitionAt = getScenarioTime() + stayTime
-
-            for i=1, #freighter.escorts do
-                if freighter.escorts[i]:isValid() then
-                    freighter.escorts[i]:orderDefendTarget(freighter)    
-                end
-            end
-        end
-
-        --- unstuck logic
-        if getScenarioTime() > freighter.nextPosMeasurementAt then
-            if freighter.state == stateDuringTransit and distance(freighter, freighter.lastPosMeasurementX, freighter.lastPosMeasurementY) < 50.0 then
-                print("[Commerce] " .. freighter:getCallSign() .. " unstucking self")
-                freighter.state = stateUnstuck
-                freighter.nextStateTransitionAt = getScenarioTime() + irandom(5, 10)
-                freighter:orderDefendLocation(freighter:getPosition())
-            elseif freighter.state == stateUnstuck and getScenarioTime() > freighter.nextStateTransitionAt then
-                print("[Commerce] " .. freighter:getCallSign() .. " should've unstucked myself")
-                freighter.state = stateBeginNewLeg
-            end
-
-            freighter.lastPosMeasurementX, freighter.lastPosMeasurementY = freighter:getPosition()
-            freighter.nextPosMeasurementAt = getScenarioTime() + irandom(25, 40)
-        end
-
-        if freighter.state == stateDockedUnpacking and getScenarioTime() > freighter.nextStateTransitionAt then
-            print("[Commerce] " .. freighter:getCallSign() .. " departing " .. dest:getCallSign())
-            freighter.state = stateBeginNewLeg
-            freighter.currentLeg = freighter.currentLeg + 1
-        end
-
-    end
 
     local fx, fy = freighter:getPosition()
 
@@ -256,7 +296,6 @@ function spawnCommerceFleet(spawnLocationX, spawnLocationY, tradeRoute, starting
     local escortCount = 0
 
     local dx, dy = vectorFromAngle(random(0,360),random(100,500))
-
 
     local escortCallsignFormat = escortCallsignFormats[irandom(1, #escortCallsignFormats)]
     while irandom(1, 100) < 45 do
@@ -282,6 +321,15 @@ function spawnCommerceFleet(spawnLocationX, spawnLocationY, tradeRoute, starting
 
         freighter.escorts[i]:setRotation(freighter:getRotation())
         freighter.escorts[i]:setScanned(freighter:isFriendly(getPlayerShip(-1)))
+    end
+
+    if escortCount == 0 then
+        --- warp drive doesn't work with formations at all
+        --- chance of warp drive if no escorts present
+        if irandom(0,100) < 33 then
+            freighter:setWarpDrive(true)
+            freighter:setJumpDrive(false)
+        end
     end
 
     print("[Commerce] Spawned fleet " .. freighter:getCallSign() .. " with " .. escortCount .. " escorts")
