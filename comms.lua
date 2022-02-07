@@ -393,7 +393,7 @@ function randomizedBdfCommsFunc()
 end
 
 kralienFiendComms_1 = function()
-    setCommsMessage(_("Me Roghar raugharR', the humen slayer, whose father is Raghran raugharR', Scourrge of the weak, whose father is Gar Raughar, drinker of blood. We talk. Cease fire. Yes?"))
+    setCommsMessage(_("Me Roghar raugharR', the humen slayer, whose father is Raghran raugharR', Scourge of the weak, whose father is Gar raugharR, drinker of blood. We talk. Cease fire. Yes?"))
     addCommsReply(
         _("Agreed."),
         function()

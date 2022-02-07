@@ -142,6 +142,7 @@ function myInit()
     hfFreighter.sosBlinkingEnabled = true
     hfFreighter.spottedFriends = false
     hfFreighter.initialX, hfFreighter.initialY = hfFreighter:getPosition()
+    hfFreighter:setRadarSignatureInfo(hfFreighter:getRadarSignatureGravity(), 1.0, 0.0)
 
     --- jump cruiser picks up hfFreighter
     -- jumpC = CpuShip():setFaction("Independent"):setTemplate("Jump Carrier"):setCallSign("JC"):setPosition(146708, 142000)
@@ -166,7 +167,6 @@ function myInit()
 
     initializeMinerHabs()
     initializeCommerce()
-    initializeFriendlyProbes()
 
     ambushInit()
 

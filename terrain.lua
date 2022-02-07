@@ -87,8 +87,9 @@ function initializeMinerHabs()
         {name = "Hab 50", x = 26832, y = 16153}, 
         {name = "Hab 52", x = 24513, y = 17242}, 
         {name = "Hab 301", x = 68931, y = 120334}, 
+        {name = "Hab 181", x = -34602, y = -11028}, 
+        {name = "Hab 183", x = -33820, y = -13451}, 
     }
-
     for i=1, #habsToCreate do
         local entry = habsToCreate[i] 
         print("[Terrain] Spawning ", entry.name)
