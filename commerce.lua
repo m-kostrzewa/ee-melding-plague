@@ -4,6 +4,7 @@ local stateBeginNewLeg = 0
 local stateDuringTransit = 1
 local stateDockedUnpacking = 2
 local stateEgressSystem = 3
+local stateDestroyed = 7
 local stateUnstuck = 8
 local stateDuringCombat = 9
 
@@ -71,7 +72,7 @@ local function randomCommerceFreighterShipCommsFunc()
             else 
                 setCommsMessage(_(
                     "I'm the captain of " .. comms_target:getFaction() .. " convoy " .. comms_target:getCallSign() .. ". " ..
-                    "We're just passing by this sector. We're on our way to " .. comms_target.tradeRoute[#comms_target.tradeRoute]:getCallSign() .. "."))
+                    "We're just passing by this system. We're on our way to " .. comms_target.tradeRoute[#comms_target.tradeRoute]:getCallSign() .. "."))
                 addCommsReply(
                     _("Request detailed itinerary."),
                     requestDetailedItineraryComms
@@ -83,7 +84,7 @@ local function randomCommerceFreighterShipCommsFunc()
             if comms_target.state == stateDuringCombat then
                 duringCombatComms()
             else 
-                setCommsMessage(_("This is " .. comms_target:getCallSign() .. ". We're " .. comms_target:getFaction() .. "."))
+                setCommsMessage(_("This is " .. comms_target:getCallSign() .. ". We're " .. comms_target:getFaction() .. ". I'm just a business man... doing business."))
                 addCommsReply(
                     _("Request detailed itinerary."),
                     requestDetailedItineraryComms
@@ -210,49 +211,144 @@ local function makeTradeRoute(startFrom, ultimateDest)
         end
     end
 
-
-
     return tradeRoute
 end
 
+local function spawnCommerceFleet(spawnLocationX, spawnLocationY, tradeRoute)
 
-function initializeCommerce()
-    commerceFreighters = {}
+    local factions = {
+        "Independent",
+        "Independent",
+        "Independent",
+        "Independent",
+        "Human Navy",
+        "CUF",
+        "USN",
+        "Arlenians",
+        "Arlenians",
+        "Arlenians"
+    }
+    local freighterTypes = {
+        "Fuel Freighter 1","Fuel Freighter 2","Fuel Freighter 3","Fuel Freighter 4",
+        "Fuel Freighter 5","Fuel Jump Freighter 3","Fuel Jump Freighter 4","Fuel Jump Freighter 5",
+        "Equipment Freighter 1","Equipment Freighter 2","Equipment Freighter 3","Equipment Freighter 4",
+        "Equipment Freighter 5","Equipment Jump Freighter 3","Equipment Jump Freighter 4","Equipment Jump Freighter 5",
+        "Goods Freighter 1","Goods Freighter 2","Goods Freighter 3","Goods Freighter 4","Goods Freighter 5",
+        "Goods Jump Freighter 3","Goods Jump Freighter 4","Goods Jump Freighter 5",
+        "Personnel Freighter 1","Personnel Freighter 2","Personnel Freighter 3","Personnel Freighter 4","Personnel Freighter 5",
+        "Personnel Jump Freighter 3","Personnel Jump Freighter 4","Personnel Jump Freighter 5",
 
-    spawnCommerceFleet(-80728, 140307, makeTradeRoute(southExitWh, northExitWh))
-    spawnCommerceFleet(1326, 8230, makeTradeRoute(borderStation, northExitWh))
-    spawnCommerceFleet(-257, 1722, makeTradeRoute(freeport9, southExitWh))
-    spawnCommerceFleet(-57647, 127520, makeTradeRoute(borderStation, northExitWh))
-    spawnCommerceFleet(-10930, 38434, makeTradeRoute(borderStation, northExitWh))
-    spawnCommerceFleet(-45973, 78147, makeTradeRoute(borderStation, northExitWh))
-    spawnCommerceFleet(-47000, 80997, makeTradeRoute(borderStation, southExitWh))
-    spawnCommerceFleet(-27702, 49339, makeTradeRoute(borderStation, southExitWh))
+        --- some quick traffic
+        "Adder MK3", "Adder MK4", "Adder MK5", "Adder MK8", "MT52 Hornet", "MU52 Hornet", "Fighter",
+        "Adder MK3", "Adder MK4", "Adder MK5", "Adder MK8", "MT52 Hornet", "MU52 Hornet", "Fighter",
+        "Adder MK3", "Adder MK4", "Adder MK5", "Adder MK8", "MT52 Hornet", "MU52 Hornet", "Fighter",
+    }
+    local escortTypes = {
+        "Adder MK3", "Adder MK4", "Adder MK5", "Adder MK8", "MT52 Hornet", "MU52 Hornet", "Fighter"
+    }
+    local escortCallsignFormats =  {
+        "%s E %i", "%s-%i", "%s/%i", "%s 0%i"
+    }
 
-    spawnCommerceFleet(42466, -21290, makeTradeRoute(bobsStation, northExitWh))
-    spawnCommerceFleet(46996, -31030, makeTradeRoute(bobsStation, northExitWh))
-    spawnCommerceFleet(91390, -62287, makeTradeRoute(borderStation, northExitWh))
-    spawnCommerceFleet(141447, -89920, makeTradeRoute(northExitWh, southExitWh))
-    spawnCommerceFleet(84004, -33904, makeTradeRoute(bobsStation, southExitWh))
-    spawnCommerceFleet(500, -1722, makeTradeRoute(freeport9, northExitWh))
+    local faction = factions[irandom(1, #factions)]
+    local freighterType = freighterTypes[irandom(1, #freighterTypes)]
+    local freighter = CpuShip():
+        setTemplate(freighterType):setFaction(faction):setCommsFunction(randomCommerceFreighterShipCommsFunc()):setPosition(spawnLocationX, spawnLocationY)
+    freighter:setScanned(freighter:isFriendly(getPlayerShip(-1)))
 
-    for i=1, 10 do
-        local aHab = habs[irandom(1, #habs)]
-        local hx, hy = aHab:getPosition()
-        local dx, dy = vectorFromAngle(irandom(0, 360), 1000)
-        if irandom(1, 100) < 50 then
-            spawnCommerceFleet(hx + dx, hy + dy, makeTradeRoute(aHab, northExitWh))
-        else
-            spawnCommerceFleet(hx + dx, hy + dy, makeTradeRoute(aHab, southExitWh))
+    ElectricExplosionEffect():setPosition(spawnLocationX, spawnLocationY):setSize(600):setOnRadar(true)
+
+    freighter.tradeRoute = tradeRoute
+    freighter.currentLeg = 1
+    freighter.state = stateBeginNewLeg
+    freighter.stateBeforeCombat = nil
+    freighter.escorts = {}
+
+    --- for unstuck logic
+    freighter.nextPosMeasurementAt = getScenarioTime() + 20.0
+    freighter.lastPosMeasurementX, freighter.lastPosMeasurementY = freighter:getPosition()
+
+    table.insert(commerceFreighters, freighter)
+
+    local fx, fy = freighter:getPosition()
+
+    local escortType = escortTypes[irandom(1, #escortTypes)]
+    local escortCount = 0
+
+    local dx, dy = vectorFromAngle(random(0,360),random(100,500))
+
+    local escortCallsignFormat = escortCallsignFormats[irandom(1, #escortCallsignFormats)]
+    while irandom(1, 100) < 45 do
+        local escortShip = CpuShip():setTemplate(escortType):setCommsFunction(randomCommerceEscortShipCommsFunc())
+        escortShip:setJumpDrive(freighter:hasJumpDrive())
+        escortShip:setFaction(freighter:getFaction())
+
+
+        escortShip:setCallSign(string.format(escortCallsignFormat, freighter:getCallSign(), escortCount))
+
+        escortCount = escortCount + 1
+
+        escortShip.freighter = freighter
+
+        table.insert(escortShip.freighter.escorts, escortShip)
+    end
+
+    local angleSeparation = 300.0 / (#freighter.escorts + 1)
+    for i=1, #freighter.escorts do
+        local dx, dy = vectorFromAngle(30.0 + i * angleSeparation, 700)
+        freighter.escorts[i]:setPosition(fx + dx, fy + dy)
+        ElectricExplosionEffect():setPosition(fx + dx, fy + dy):setSize(300):setOnRadar(true)
+
+        freighter.escorts[i]:setRotation(freighter:getRotation())
+        freighter.escorts[i]:setScanned(freighter:isFriendly(getPlayerShip(-1)))
+    end
+
+    if escortCount == 0 then
+        --- warp drive doesn't work with formations at all
+        --- chance of warp drive if no escorts present
+        if irandom(0,100) < 70 then
+            freighter:setWarpDrive(true)
+            freighter:setJumpDrive(false)
         end
     end
+
+    local tradeRouteStrs = {}
+    for i=1, #tradeRoute do
+        table.insert(tradeRouteStrs, tradeRoute[i]:getCallSign())
+    end
+    print("[Commerce] Spawned fleet " .. freighter:getCallSign() .. " with " .. escortCount .. " escorts, waypoints: ", table.concat(tradeRouteStrs, ", "))
 end
 
+local function spawnCommerceFleetAtWormhole(wormhole)
+    local spawnAtWh = nil
+    local tradeRoute = nil
+    if wormhole == southExitWh then
+        print("[Commerce] Respawning commerce fleet at north wormwhole")
+        spawnAtWh = northExitWh
+        tradeRoute = makeTradeRoute(northExitWh, southExitWh)
+    else 
+        print("[Commerce] Respawning commerce fleet at south wormwhole")
+        spawnAtWh = southExitWh 
+        tradeRoute = makeTradeRoute(southExitWh, northExitWh)
+    end
+    local wx, wy = spawnAtWh:getPosition()
+    local dx, dy = vectorFromAngle(random(0,360),random(3500,4000))
+    spawnCommerceFleet(wx+dx, wy+dy, tradeRoute, 0)
+end
 
 local function updateCommerceFleet(delta, freighter)
     if not freighter:isValid() then
-        for i=1, #freighter.escorts do
-            if freighter.escorts[i]:isValid() then 
-                freighter.escorts[i]:orderFlyTowards(freighter.tradeRoute[#freighter.tradeRoute]:getPosition())
+        if freighter.state ~= stateDestroyed then
+            freighter.state = stateDestroyed
+            if irandom(1, 100) < 50 then
+                spawnCommerceFleetAtWormhole(northExitWh)
+            else
+                spawnCommerceFleetAtWormhole(southExitWh)
+            end
+            for i=1, #freighter.escorts do
+                if freighter.escorts[i]:isValid() then 
+                    freighter.escorts[i]:orderFlyTowards(freighter.tradeRoute[#freighter.tradeRoute]:getPosition())
+                end
             end
         end
         return
@@ -269,6 +365,26 @@ local function updateCommerceFleet(delta, freighter)
             if freighter.escorts[i]:isValid() then 
                 freighter.escorts[i]:orderDefendTarget(freighter)
             end
+        end
+
+        local rand = irandom(1, 3)
+        if rand == 1 then
+            freighter:sendCommsMessage(
+                getPlayerShip(-1),
+                _("Mayday mayday. This is " .. freighter:getFaction() .. " convoy " .. freighter:getCallSign() .. 
+                    " to any friendly ships in the area. We are under attack in sector " .. freighter:getSectorName() .. " and require assistance!")
+            )
+        elseif rand == 2 then
+            freighter:sendCommsMessage(
+                getPlayerShip(-1),
+                _("To all frequencies. We are tracking enemy contacts close by... They're onto us! We need help in " .. freighter:getSectorName() .. "! Repeat, we need help!")
+            )
+        elseif rand == 3 then
+            freighter:sendCommsMessage(
+                getPlayerShip(-1),
+                _("Attention all ships! Bandits approaching us in sector " .. freighter:getSectorName() .. 
+                    ", help would be appreciated. " .. freighter:getCallSign() .. " out.")
+            )
         end
     end
 
@@ -351,6 +467,36 @@ local function updateCommerceFleet(delta, freighter)
     end
 end
 
+function initializeCommerce()
+    commerceFreighters = {}
+
+    spawnCommerceFleet(-80728, 140307, makeTradeRoute(southExitWh, northExitWh))
+    spawnCommerceFleet(1326, 8230, makeTradeRoute(borderStation, northExitWh))
+    spawnCommerceFleet(-257, 1722, makeTradeRoute(freeport9, southExitWh))
+    spawnCommerceFleet(-57647, 127520, makeTradeRoute(borderStation, northExitWh))
+    spawnCommerceFleet(-10930, 38434, makeTradeRoute(borderStation, northExitWh))
+    spawnCommerceFleet(-45973, 78147, makeTradeRoute(borderStation, northExitWh))
+    spawnCommerceFleet(-47000, 80997, makeTradeRoute(borderStation, southExitWh))
+    spawnCommerceFleet(-27702, 49339, makeTradeRoute(borderStation, southExitWh))
+
+    spawnCommerceFleet(42466, -21290, makeTradeRoute(bobsStation, northExitWh))
+    spawnCommerceFleet(46996, -31030, makeTradeRoute(bobsStation, northExitWh))
+    spawnCommerceFleet(91390, -62287, makeTradeRoute(borderStation, northExitWh))
+    spawnCommerceFleet(141447, -89920, makeTradeRoute(northExitWh, southExitWh))
+    spawnCommerceFleet(84004, -33904, makeTradeRoute(bobsStation, southExitWh))
+    spawnCommerceFleet(500, -1722, makeTradeRoute(freeport9, northExitWh))
+
+    for i=1, 10 do
+        local aHab = habs[irandom(1, #habs)]
+        local hx, hy = aHab:getPosition()
+        local dx, dy = vectorFromAngle(irandom(0, 360), 1000)
+        if irandom(1, 100) < 50 then
+            spawnCommerceFleet(hx + dx, hy + dy, makeTradeRoute(aHab, northExitWh))
+        else
+            spawnCommerceFleet(hx + dx, hy + dy, makeTradeRoute(aHab, southExitWh))
+        end
+    end
+end
 
 function updateCommerce(delta)
     for i = 1, #commerceFreighters do
@@ -358,144 +504,16 @@ function updateCommerce(delta)
     end
 end
 
-function spawnCommerceFleet(spawnLocationX, spawnLocationY, tradeRoute)
-
-    local factions = {
-        "Independent",
-        "Independent",
-        "Independent",
-        "Independent",
-        "Human Navy",
-        "CUF",
-        "USN",
-        "Arlenians",
-        "Arlenians",
-        "Arlenians"
-    }
-    local freighterTypes = {
-        "Fuel Freighter 1","Fuel Freighter 2","Fuel Freighter 3","Fuel Freighter 4",
-        "Fuel Freighter 5","Fuel Jump Freighter 3","Fuel Jump Freighter 4","Fuel Jump Freighter 5",
-        "Equipment Freighter 1","Equipment Freighter 2","Equipment Freighter 3","Equipment Freighter 4",
-        "Equipment Freighter 5","Equipment Jump Freighter 3","Equipment Jump Freighter 4","Equipment Jump Freighter 5",
-        "Goods Freighter 1","Goods Freighter 2","Goods Freighter 3","Goods Freighter 4","Goods Freighter 5",
-        "Goods Jump Freighter 3","Goods Jump Freighter 4","Goods Jump Freighter 5",
-        "Personnel Freighter 1","Personnel Freighter 2","Personnel Freighter 3","Personnel Freighter 4","Personnel Freighter 5",
-        "Personnel Jump Freighter 3","Personnel Jump Freighter 4","Personnel Jump Freighter 5",
-
-        --- some quick traffic
-        "Adder MK3", "Adder MK4", "Adder MK5", "Adder MK8", "MT52 Hornet", "MU52 Hornet", "Fighter",
-        "Adder MK3", "Adder MK4", "Adder MK5", "Adder MK8", "MT52 Hornet", "MU52 Hornet", "Fighter",
-        "Adder MK3", "Adder MK4", "Adder MK5", "Adder MK8", "MT52 Hornet", "MU52 Hornet", "Fighter",
-    }
-    local escortTypes = {
-        "Adder MK3", "Adder MK4", "Adder MK5", "Adder MK8", "MT52 Hornet", "MU52 Hornet", "Fighter"
-    }
-    local escortCallsignFormats =  {
-        "%s E %i", "%s-%i", "%s/%i", "%s 0%i"
-    }
-
-    local faction = factions[irandom(1, #factions)]
-    local freighterType = freighterTypes[irandom(1, #freighterTypes)]
-    local freighter = CpuShip():
-        setTemplate(freighterType):setFaction(faction):setCommsFunction(randomCommerceFreighterShipCommsFunc()):setPosition(spawnLocationX, spawnLocationY)
-    freighter:setScanned(freighter:isFriendly(getPlayerShip(-1)))
-
-    ElectricExplosionEffect():setPosition(spawnLocationX, spawnLocationY):setSize(600):setOnRadar(true)
-
-    freighter.tradeRoute = tradeRoute
-    freighter.currentLeg = 1
-    freighter.state = stateBeginNewLeg
-    freighter.stateBeforeCombat = nil
-    freighter.escorts = {}
-
-    --- for unstuck logic
-    freighter.nextPosMeasurementAt = getScenarioTime() + 20.0
-    freighter.lastPosMeasurementX, freighter.lastPosMeasurementY = freighter:getPosition()
-
-    freighter.ultimateDestStr = "somewhere"
-    if #freighter.tradeRoute > 0 then
-        local ultimateDest = freighter.tradeRoute[#freighter.tradeRoute]
-        if ultimateDest.typeName == "WormHole" then
-            if ultimateDest == southExitWh then
-                freighter.ultimateDestStr = "Human space"
-            elseif ultimateDest == northExitWh then
-                freighter.ultimateDestStr = "Independent space"
-            end
-        elseif ultimateDest.typeName == "SpaceStation" then
-            freighter.ultimateDestStr = ultimateDest:getCallSign()
-        end
-    end
-    
-    table.insert(commerceFreighters, freighter)
-
-    local fx, fy = freighter:getPosition()
-
-    local escortType = escortTypes[irandom(1, #escortTypes)]
-    local escortCount = 0
-
-    local dx, dy = vectorFromAngle(random(0,360),random(100,500))
-
-    local escortCallsignFormat = escortCallsignFormats[irandom(1, #escortCallsignFormats)]
-    while irandom(1, 100) < 45 do
-        local escortShip = CpuShip():setTemplate(escortType):setCommsFunction(randomCommerceEscortShipCommsFunc())
-        escortShip:setJumpDrive(freighter:hasJumpDrive())
-        escortShip:setFaction(freighter:getFaction())
-
-
-        escortShip:setCallSign(string.format(escortCallsignFormat, freighter:getCallSign(), escortCount))
-
-        escortCount = escortCount + 1
-
-        escortShip.freighter = freighter
-
-        table.insert(escortShip.freighter.escorts, escortShip)
-    end
-
-    local angleSeparation = 300.0 / (#freighter.escorts + 1)
-    for i=1, #freighter.escorts do
-        local dx, dy = vectorFromAngle(30.0 + i * angleSeparation, 700)
-        freighter.escorts[i]:setPosition(fx + dx, fy + dy)
-        ElectricExplosionEffect():setPosition(fx + dx, fy + dy):setSize(300):setOnRadar(true)
-
-        freighter.escorts[i]:setRotation(freighter:getRotation())
-        freighter.escorts[i]:setScanned(freighter:isFriendly(getPlayerShip(-1)))
-    end
-
-    if escortCount == 0 then
-        --- warp drive doesn't work with formations at all
-        --- chance of warp drive if no escorts present
-        if irandom(0,100) < 33 then
-            freighter:setWarpDrive(true)
-            freighter:setJumpDrive(false)
-        end
-    end
-
-    local tradeRouteStrs = {}
-    for i=1, #tradeRoute do
-        table.insert(tradeRouteStrs, tradeRoute[i]:getCallSign())
-    end
-    print("[Commerce] Spawned fleet " .. freighter:getCallSign() .. " with " .. escortCount .. " escorts, waypoints: ", table.concat(tradeRouteStrs, ", "))
-end
-
 function maybeRespawnCommerceFleet(wormhole, teleportee)
     for i=1, #commerceFreighters do
         if commerceFreighters[i] == teleportee then
             --- yep, it was a freighter that just jumped.
             --- therefore, respawn a new fleet from the other wormhole
-            local spawnAtWh = nil
-            local tradeRoute = nil
             if wormhole == southExitWh then
-                print("[Commerce] Respawning commerce fleet at north wormwhole")
-                spawnAtWh = northExitWh
-                tradeRoute = makeTradeRoute(northExitWh, southExitWh)
-            else 
-                print("[Commerce] Respawning commerce fleet at south wormwhole")
-                spawnAtWh = southExitWh 
-                tradeRoute = makeTradeRoute(southExitWh, northExitWh)
+                spawnCommerceFleetAtWormhole(northExitWh)
+            else
+                spawnCommerceFleetAtWormhole(southExitWh)
             end
-            local wx, wy = spawnAtWh:getPosition()
-            local dx, dy = vectorFromAngle(random(0,360),random(3500,4000))
-            spawnCommerceFleet(wx+dx, wy+dy, tradeRoute, 0)
         end
     end
 end

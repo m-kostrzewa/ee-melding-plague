@@ -41,14 +41,14 @@ function wormholePlayerNearingExitPoint(delta)
                     ps,
                     _(ps:getCallSign() .. ", you're approaching a wormhole that leads deeper into independent space. " ..
                         "By going through it you will leave the assigned mission area. " ..
-                        "It will be considered desertion. Turn back ASAP.")
+                        "FYI: it will be considered desertion. Turn back ASAP.")
                 )
                 ps.nearExitWormhole = false
             elseif distToSouthExit < 8000 and ps.nearExitWormhole == true then
                 freeport9:sendCommsMessage(
                     ps,
                     _(ps:getCallSign() .. ", that wormhole leads back to Human controlled space, which is outside our area of operations. " .. 
-                        "Going through it would mean dereliction of duty.")
+                        "Just so we're clear: going through it would mean dereliction of duty.")
                 )
                 ps.nearExitWormhole = false
             end

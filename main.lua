@@ -4,7 +4,7 @@ require("./69_mymission/commerce.lua")
 require("./69_mymission/terrain.lua")
 require("./69_mymission/wormholes.lua")
 require("./69_mymission/globals.lua")
-require("./69_mymission/ambush.lua")
+require("./69_mymission/kraylor.lua")
 
 
 local numSectorsPerSide
@@ -24,6 +24,13 @@ function hfFreighterSosBlinking(delta)
     end
 end
 
+local mission1_4_setup_done = false
+local function mission1_4_kraylorSkirmishes(delta)
+    if not mission1_4_setup_done then
+        activateKraylorAttacks()
+        mission1_4_setup_done = true
+    end
+end
 
 local mission1_3a_setup_done = false
 local function mission1_3a_goto_miners(delta)
@@ -33,9 +40,13 @@ local function mission1_3a_goto_miners(delta)
 
         hfFreighter:orderDock(minerHab)
 
-        freeport9CommsMissionSpecific = freeport9Comms_m1_3_a --- todo
+        freeport9CommsMissionSpecific = freeport9Comms_m1_3_a
         minerHabCommsMissionSpecific = minerHabComms_m1_3_a
         hfFreighterCommsMissionSpecific = hfFreighterComms_m1_3_a
+    end
+
+    if ambushState == ambushStateDone then
+        currentMission = mission1_4_kraylorSkirmishes
     end
 end
 
@@ -44,7 +55,6 @@ local function mission1_3b_jump_carrier(delta)
 
     if not mission1_3b_setup_done then
         mission1_3b_setup_done = true
-
         --- todo
     end
 end
@@ -78,7 +88,7 @@ local function mission1_1_prologue(delta)
     if getScenarioTime() >= 30 and stroke2.talked and stroke4.talked then
         stroke1:sendCommsMessage(
             getPlayerShip(-1),
-            _("Stroke 3, report to Freeport 9 command.")
+            _(getPlayerShip(-1):getCallSign() .. ", report to Freeport 9 command.")
         )
         currentMission = mission1_2_lookForSignal
     end
@@ -88,14 +98,11 @@ end
 
 function myInit()
     -- currentMission = mission1_1_prologue
-    currentMission = mission1_2_lookForSignal
-
-    initializeWormholes()
-
+    currentMission = mission1_4_kraylorSkirmishes
 
 
     player = PlayerSpaceship():setFaction("Human Navy"):setTemplate("Phobos M3P"):setCallSign("Stroke 3"):setWarpDrive(true)
-    player:setPosition(156412, 96481)
+    player:setPosition(0, 0):setHeading(270)
 
     player.nearExitWormhole = false
     player.nearMapBoundary = false
@@ -150,10 +157,10 @@ function myInit()
     --- todo: add ElectricExplosionEffect to some nebulas
     --- todo: add asteroids and visualasteroids whatever they are
 
-
+    initializeWormholes()
     initializeMinerHabs()
     initializeCommerce()
-    ambushInit()
+    initializeKraylor()
 
     local minerHabX, minerHabY = minerHab:getPosition()
 
@@ -185,7 +192,8 @@ function playerNearingMapBoundary(delta)
             elseif distToFp9 > ((numSectorsPerSide - 1) / 2) * 20000 and ps.nearMapBoundary == false then 
                 freeport9:sendCommsMessage(
                     ps,
-                    _(ps:getCallSign() .. ", you're approaching the boundaries of our operational area. Turn back or face consequences of desertion.")
+                    _(ps:getCallSign() .. ", you're approaching the boundaries of our operational area (" .. (numSectorsPerSide / 2) * 20000 ..
+                        " units away from " .. freeport9:getCallSign() .. ") As a reminder: leaving the operational area is considered desertion.")
                 )
                 ps.nearMapBoundary = true
             elseif distToFp9 > (numSectorsPerSide / 2) * 20000 then 
@@ -218,4 +226,7 @@ function myUpdate(delta)
     ambushUpdate(delta)
 
     rotateStations(delta)
+
+    --- todo: add rep for killing those guys
+    kraylorSkirmishesUpdate(delta)
 end

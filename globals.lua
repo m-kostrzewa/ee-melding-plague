@@ -33,7 +33,6 @@ tradeRouteSouthToNorth = {}
 tradeRouteNorthToSouth = {}
 
 --- ambush
-kralienStation = nil
 kralienFiend = nil
 kralienFiendCommsMissionSpecific = {}
 ambushState = 0

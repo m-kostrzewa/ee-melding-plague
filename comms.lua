@@ -2,18 +2,18 @@ require("./69_mymission/globals.lua")
 
 
 function stroke1Comms()
-    setCommsMessage(_("Eyes open, Stroke 3. I don't want to end up dead because you were daydreaming. Stroke 1 out."))
+    setCommsMessage(_("Eyes open, " .. comms_source:getCallSign() .. ". I don't want to end up dead because you were daydreaming. " .. comms_target:getCallSign() .. " out."))
     addCommsReply(_("Aye, sir."))
     comms_target.talked = true
 end
 
 function stroke2Comms()
-    setCommsMessage(_("Stroke 2... can you speak up?"))
+    setCommsMessage(_(comms_target:getCallSign() .. "... can you speak up?"))
     if comms_target.talked then
         addCommsReply(
             _("Status?"),
             function()
-                setCommsMessage(_("It's just perfect. Stroke 2 out"))
+                setCommsMessage(_("It's just perfect. " .. comms_target:getCallSign() .. " out"))
             end
         )
     else
@@ -30,22 +30,22 @@ function stroke2Comms()
                             _("I'm glad you asked. I'm longing for a nice, cold 'Sidewinder Fang'."),
                             function()
                                 setCommsMessage(_("Hmpf. You know they only got 'Liberty Ale' here, friend. Anyways, I think the boss is monitoring this frequency, " .. 
-                                    "better get back on track. Stroke 2 out."))
+                                    "better get back on track. " .. comms_target:getCallSign() .. " out."))
                                     comms_target.likesPlayer = true
                             end
                         )
                         addCommsReply(
                             _("No thanks."),
                             function()
-                                setCommsMessage(_("Suit yourself. Let's focus on the work then. Stroke 2 out."))
+                                setCommsMessage(_("Suit yourself. Let's focus on the work then. " .. comms_target:getCallSign() .. " out."))
                             end
                         )
                     end
                 )
                 addCommsReply(
-                    _("Stroke 2, please keep it proffessional."),
+                    _(comms_target:getCallSign() .. ", please keep it professional."),
                     function()
-                        setCommsMessage(_("Affirm. All systems green. Stroke 2 out."))
+                        setCommsMessage(_("Roger. All systems green. " .. comms_target:getCallSign() .. " out."))
                     end
                 )
             end
@@ -55,12 +55,12 @@ function stroke2Comms()
 end
 
 function stroke4Comms()
-    setCommsMessage(_("Stroke 4 here."))
+    setCommsMessage(_(comms_target:getCallSign() .. " here."))
     if comms_target.talked then
         addCommsReply(
             _("Status?"),
             function()
-                setCommsMessage(_("Nothing to report. Stroke 4 out"))
+                setCommsMessage(_("Nothing to report. " .. comms_target:getCallSign() .. " out."))
             end
         )
     else 
@@ -74,23 +74,25 @@ function stroke4Comms()
                     function()
                         setCommsMessage(_("Why does the Navy need this base anyways?"))
                         addCommsReply(
-                            _("Freeport 9 is located on an important trade route."),
+                            _(freeport9:getCallSign() .. " is located on an important trade route."),
                             function()
-                                setCommsMessage(_("Thanks for the reminder, mate. Defending rich merchants. My life has a purpose now. Stroke 4 out."))
+                                setCommsMessage(_("Thanks for the reminder, mate. Defending rich merchants. My life has a purpose now. "
+                                    .. comms_target:getCallSign() .. " out."))
                                 comms_target.likesPlayer = true
                             end
                         )
                         addCommsReply(
                             _("Because the local gas mining is important to the war effort."),
                             function()
-                                setCommsMessage(_("Thanks for the reminder, mate. Defending grumpy gas miners. My life has a purpose now. Stroke 4 out."))
+                                setCommsMessage(_("Thanks for the reminder, mate. Defending grumpy gas miners. My life has a purpose now. "
+                                    .. comms_target:getCallSign() .. " out."))
                                 comms_target.likesPlayer = true
                             end
                         )
                         addCommsReply(
-                            _("No time."),
+                            _("No time to explain."),
                             function()
-                                setCommsMessage(_("Affirm, we will discuss it later. Stroke 2 out."))
+                                setCommsMessage(_("Affirm, we will discuss it later. " .. comms_target:getCallSign() .. " out."))
                             end
                         )
                     end
@@ -99,7 +101,7 @@ function stroke4Comms()
                     _("Stop complaining."),
                     function()
                         setCommsMessage(_("What else am I supposed to do? It's not like anything interesting happened in weeks..." ..
-                            "Eh, let's just get back to the business. Stroke 4 out."))
+                            "Eh, let's just get back to the business. " .. comms_target:getCallSign() .. " out."))
                     end
                 )
             end
@@ -146,7 +148,7 @@ function randomizedHabCommsFunc()
         end
     elseif rand == 3 then
         return function()
-            setCommsMessage(_("We don't want Navy types like you in this sector."))
+            setCommsMessage(_("We don't want Navy types like you in this system."))
         end
     end
 end
@@ -167,10 +169,11 @@ hfFreighterComms_m1_2_inner = function()
         end
     )
     addCommsReply(
-        _("We will arrange a jump carrier from Freeport 9."),
+        _("We will arrange a jump carrier from " .. freeport9:getCallSign()),
         function()
             hfFreighter.awaitJumpCarrier = true
-            setCommsMessage(_("Confirm! Freeport 9. A lot of traffic there these days. Please take us there soon. We will await for the jump carrier here, yes. Please arrange it."))
+            setCommsMessage(_("Confirm! " .. freeport9:getCallSign() .. ". A lot of traffic there these days. Please take us there soon. " ..
+                "We will await for the jump carrier here, yes. Please arrange it."))
         end
     )
 end
@@ -178,7 +181,7 @@ end
 hfFreighterComms_m1_2 = function()
     setCommsMessage(_("<Channel open, but no reply>"))
     addCommsReply(
-        _("HF2137, report in!"),
+        _(comms_target:getCallSign() .. ", come in!"),
         function()
             setCommsMessage(_("<No reply, but you can hear someone breathing on the other side>"))
             addCommsReply(
@@ -268,7 +271,7 @@ end
 
 
 function freeport9Comms()
-    setCommsMessage(_("Freeport 9 here."))
+    setCommsMessage(_("CIC, Navy HQ, " .. comms_target:getCallSign() .. " here. Come in, " .. comms_source:getCallSign() .. "."))
     freeport9CommsMissionSpecific()
 end
 
@@ -276,7 +279,8 @@ freeport9Comms_m1_1 = function()
     addCommsReply(
         _("What are my orders, sir?"),
         function()
-            setCommsMessage(_("Continue combat patrol around Freeport 9. Check with other ships in formation. We might have new orders for you very soon."))
+            setCommsMessage(_("Continue combat patrol around " .. freeport9:getCallSign() .. 
+                ". Check in with the other ships in your formation. We might have new orders for you very soon."))
             addCommsReply(
                 _("Aye, sir"),
                 function()
@@ -299,6 +303,16 @@ function freeport9Comms_m1_2()
                     setCommsMessage(_("Dismissed."))
                 end
             )
+        end
+    )
+end
+
+function freeport9Comms_m1_3_a()
+    addCommsReply(
+        _("<give report> What are my orders, sir?"),
+        function()
+            setCommsMessage(_("Escort " .. hfFreighter:getCallSign() .. " to ." .. minerHab:getCallSign() .. " in " .. 
+                minerHab:getSectorName() .. ". Make sure it's safe and sound."))
         end
     )
 end
@@ -328,8 +342,8 @@ minerHabComms_m1_2 = function()
             addCommsReply(
                 _("Anything else?"),
                 function()
-                    setCommsMessage(_("We detected faint lifeform readings from " .. hfFreighter:getSectorName() ..
-                        ", but it's not one of ours."))
+                    setCommsMessage(_("We detected some strange sensor readings from " .. hfFreighter:getSectorName() ..
+                        ", like from a damaged ship, but it's not one of ours."))
                     addCommsReply(
                         _("Any idea what could be there?"),
                         function()
@@ -358,7 +372,7 @@ minerHabComms_m1_2 = function()
                         end
                     )
                     addCommsReply(
-                        _("Understandable. Navy presence in this sector is dubious at best."),
+                        _("Understandable. Navy presence in this system is dubious at best."),
                         function()
                             setCommsMessage(_("Well, you and me, we agree on one thing at least."))
                             addCommsReply("<Back>", minerHabComms)
@@ -393,7 +407,8 @@ function randomizedBdfCommsFunc()
 end
 
 kralienFiendComms_1 = function()
-    setCommsMessage(_("Me Roghar raugharR', the humen slayer, whose father is Raghran raugharR', Scourge of the weak, whose father is Gar raugharR, drinker of blood. We talk. Cease fire. Yes?"))
+    setCommsMessage(_("Me Roghar raugharR', the humen slayer, whose father is Raghran raugharR', Scourge of the weak, whose father " ..
+        "is Gar raugharR, drinker of blood. We talk. Cease fire. Yes?"))
     addCommsReply(
         _("Agreed."),
         function()
@@ -444,7 +459,7 @@ kralienFiendComms_3 = function()
                 end       
             )
             addCommsReply(
-                _("Human Navy is the only legitimate authority in this sector."),
+                _("Human Navy is the only legitimate authority in this system."),
                 function()
                     setCommsMessage(_("You funny guy. I like! But no time for jokes!"))
                     addCommsReply(
