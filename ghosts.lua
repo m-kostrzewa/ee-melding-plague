@@ -1,4 +1,4 @@
-require("./69_mymission/globals.lua")
+require("./69_freeport9_mayhem/globals.lua")
 
 
 function initializeGhosts()

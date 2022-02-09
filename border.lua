@@ -1,4 +1,4 @@
-require("./69_mymission/globals.lua")
+require("./69_freeport9_mayhem/globals.lua")
 
 dockingState = 0
 local dockingStateAllowed = 1

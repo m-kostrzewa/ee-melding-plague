@@ -1,12 +1,12 @@
 require("utils.lua")
-require("./69_mymission/comms.lua")
-require("./69_mymission/commerce.lua")
-require("./69_mymission/terrain.lua")
-require("./69_mymission/wormholes.lua")
-require("./69_mymission/globals.lua")
-require("./69_mymission/kraylor.lua")
-require("./69_mymission/ghosts.lua")
-require("./69_mymission/border.lua")
+require("./69_freeport9_mayhem/comms.lua")
+require("./69_freeport9_mayhem/commerce.lua")
+require("./69_freeport9_mayhem/terrain.lua")
+require("./69_freeport9_mayhem/wormholes.lua")
+require("./69_freeport9_mayhem/globals.lua")
+require("./69_freeport9_mayhem/kraylor.lua")
+require("./69_freeport9_mayhem/ghosts.lua")
+require("./69_freeport9_mayhem/border.lua")
 
 
 local numSectorsPerSide
@@ -118,11 +118,14 @@ end
 
 function myInit()
     print([[
-    ______     _      _     
-    / ____/____(_)____(_)____
-   / /   / ___/ / ___/ / ___/
-  / /___/ /  / (__  ) (__  ) 
-  \____/_/  /_/____/_/____/   Initializing mission.
+ ______                              _   ___                          _                    
+|  ____|                            | | / _ \                        | |                   
+| |__ _ __ ___  ___ _ __   ___  _ __| || (_) |  _ __ ___   __ _ _   _| |__   ___ _ __ ___  
+|  __| '__/ _ \/ _ | '_ \ / _ \| '__| __\__, | | '_ ` _ \ / _` | | | | '_ \ / _ | '_ ` _ \ 
+| |  | | |  __|  __| |_) | (_) | |  | |_  / /  | | | | | | (_| | |_| | | | |  __| | | | | |
+|_|  |_|  \___|\___| .__/ \___/|_|   \__|/_/   |_| |_| |_|\__,_|\__, |_| |_|\___|_| |_| |_|
+                   | |                                           __/ |                     
+                   |_|                                          |___/       by Kosai
   ]])
 
                              
