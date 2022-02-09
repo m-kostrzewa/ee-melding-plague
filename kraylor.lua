@@ -1,4 +1,3 @@
-require("./69_mymission/comms.lua")
 require("./69_mymission/globals.lua")
 
 
@@ -15,10 +14,149 @@ fleetStateRallying = 2
 fleetStateAttacking = 3
 fleetStateRallyStationDestroyed = 4
 
+
+local function kralienFiendComms_1()
+    setCommsMessage(_("Me Roghar raugharR', the humen slayer, whose father is Raghran raugharR', Scourge of the weak, whose father " ..
+        "is Gar raugharR, drinker of blood. We talk. Cease fire. Yes?"))
+    addCommsReply(
+        _("Agreed."),
+        function()
+            ambushState = ambushStateCeaseFire
+            setCommsMessage(_("Okay. I bring friends over."))
+            addCommsReply(
+                _("Wait what?!.."), 
+                function()
+                    setCommsMessage(_("<Channel closed>"))
+                end
+            )
+        end
+    )
+    addCommsReply(
+        _("We don't talk with Kraylors."),
+        function()
+            ambushState = ambushStateAllOutAttack
+            setCommsMessage(_("Glory to raugharR' Clan! We crush maggots!"))
+        end
+    )
+end
+
+local function kralienFiendComms_2()
+    setCommsMessage(_("Friends coming. I call you back. Await."))
+end
+
+local function kralienFiendComms_3()
+    setCommsMessage(_("We here to claim a prize. Give us freighter. You no need it anyways."))
+    addCommsReply(
+        _("The freighter is under Human Navy protection."),
+        function()
+            setCommsMessage(_("Ha! I only see a puny frigate, with scared little humies on board. Haha!"))
+            addCommsReply(
+                _("We will call for backup and they will crush you."),
+                function()
+                    setCommsMessage(_("Hahaha! Puny humans think we will wait so long time."))
+                    addCommsReply(
+                        _("On second thought, let's talk this through.."),
+                        kralienFiendComms_3    
+                    )
+                    addCommsReply(
+                        _("That's it. You're going down!"),
+                        function()
+                            setCommsMessage(_("Glory to raugharR' Clan! We crush maggots!"))
+                            ambushState = ambushStateAllOutAttack
+                        end
+                    )
+                end       
+            )
+            addCommsReply(
+                _("Human Navy is the only legitimate authority in this system."),
+                function()
+                    setCommsMessage(_("You funny guy. I like! But no time for jokes!"))
+                    addCommsReply(
+                        _("<back>"),
+                        kralienFiendComms_3
+                    )
+                end       
+            )
+            addCommsReply(
+                _("It's not about the size - it's about technique."),
+                function()
+                    setCommsMessage(_("Haha! This what my father say! Mother not happy! But serious now!"))
+                    addCommsReply(
+                        _("<back>"),
+                        kralienFiendComms_3
+                    )
+                end       
+            )
+            addCommsReply(
+                _("Maybe we're not strong, but we're agile."),
+                function()
+                    setCommsMessage(_("True that. Know what? Give me your Combat Maneuver Drive, we go away."))
+                    addCommsReply(
+                        _("OK <give Combat Maneuver Drive>"),
+                        function()
+                            setCommsMessage(_("Good human. Good bye."))
+                            comms_source:setCanCombatManeuver(false)
+                            comms_source:addReputationPoints(50)
+                            ambushState = ambushStateResolved
+                        end
+                    )
+                    addCommsReply(
+                        _("I don't think so."),
+                        function()
+                            setCommsMessage(_("Maybe you rethink offer later."))
+                            addCommsReply(
+                                _("<back>"),
+                                kralienFiendComms_3
+                            )
+                        end
+                    )
+                end
+            )
+        end
+    )
+    addCommsReply(
+        _("Small fleet against a single frigate. raugharR' clan must be weak."),
+        function()
+            setCommsMessage(_("Argh! raugharR' Clan is the Greatest! My father is Raghran raugharR', Scourrge of the weak, whose father is Gar Raughar, drinker of blood!!!"))
+            addCommsReply(
+                _("You are correct, we apologize."),
+                kralienFiendComms_3
+            )
+            addCommsReply(
+                _("Prove it! We challenge you to a duel."),
+                function()
+                    setCommsMessage(_("Glory to raugharR' Clan! Escort ships, do not interfere!"))
+                    ambushState = ambushStateDuel
+                end
+            )
+        end
+    )
+    addCommsReply(
+        _("Never!"),
+        function()
+            ambushState = ambushStateAllOutAttack
+            setCommsMessage(_("Glory to raugharR' Clan! We crush these maggots!"))
+        end
+    )
+    addCommsReply(
+        _("[NOT IMPLEMENTED YET] Sure, take him."),
+        kralienFiendComms_3
+    )
+end
+
+local function kralienFiendComms()
+    kralienFiendCommsMissionSpecific()
+end
+
+
 function initializeKraylor()
 
-    southFleetState = fleetStateDormant
-    northFleetState = fleetStateDormant
+    southFleet = {
+        state = fleetStateDormant
+    }
+    northFleet = {
+        state = fleetStateDormant
+    }
 
     southStation = SpaceStation():setTemplate("Small Station"):setFaction("Kraylor"):setCallSign("Duj ghob"):setPosition(81329, 160168)
     Nebula():setPosition(81335, 160093)

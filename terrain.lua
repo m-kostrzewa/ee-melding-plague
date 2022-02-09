@@ -1,7 +1,5 @@
 require("utils.lua")
 
-allStationsRefs = {}
-
 
 function evalParabola(a, b, c, x0, y0, x)
     return a*(x-x0)*(x-x0) + b*(x-x0) + c+y0

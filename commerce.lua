@@ -38,6 +38,14 @@ local function randomCommerceFreighterShipCommsFunc()
         return function()
             if comms_target.state == stateDuringCombat then
                 duringCombatComms()
+            elseif comms_target.turnedAround then
+                setCommsMessage(_(
+                    "I can't believe we've been turned around due to some silly biohazard warning... But they let all human vessels through! " .. 
+                    "Typical Human racism. "))
+                addCommsReply(
+                    _("Request detailed itinerary."),
+                    requestDetailedItineraryComms
+                )
             else 
                 setCommsMessage(_(
                     "This is " .. comms_target:getCallSign() .. " " .. comms_target:getFaction() .. " freighter. " .. 
@@ -54,6 +62,14 @@ local function randomCommerceFreighterShipCommsFunc()
         return function()
             if comms_target.state == stateDuringCombat then
                 duringCombatComms()
+            elseif comms_target.turnedAround then
+                setCommsMessage(_(
+                    "Damn quarantine. They're forcing everyone infected to go back to Independent Worlds. But I don't feel sick at all! " ..
+                    "And why do they let Humans through?.."))
+                addCommsReply(
+                    _("Request detailed itinerary."),
+                    requestDetailedItineraryComms
+                )
             else 
                 setCommsMessage(_(
                     comms_target:getFaction() .. " transport " .. comms_target:getCallSign() .. " here. " .. 
@@ -69,6 +85,13 @@ local function randomCommerceFreighterShipCommsFunc()
         return function()
             if comms_target.state == stateDuringCombat then
                 duringCombatComms()
+            elseif comms_target.turnedAround then
+                setCommsMessage(_(
+                    "Humans are a joke. They're letting infected humans past the quarantine zone, but turning around everyone else."))
+                addCommsReply(
+                    _("Request detailed itinerary."),
+                    requestDetailedItineraryComms
+                )
             else 
                 setCommsMessage(_(
                     "I'm the captain of " .. comms_target:getFaction() .. " convoy " .. comms_target:getCallSign() .. ". " ..
@@ -83,6 +106,9 @@ local function randomCommerceFreighterShipCommsFunc()
         return function()
             if comms_target.state == stateDuringCombat then
                 duringCombatComms()
+            elseif comms_target.turnedAround then
+                setCommsMessage(_(
+                    "Any news on when the quarantine will be lifted? I have urgent business in the human worlds."))
             else 
                 setCommsMessage(_("This is " .. comms_target:getCallSign() .. ". We're " .. comms_target:getFaction() .. ". I'm just a business man... doing business."))
                 addCommsReply(
@@ -263,6 +289,7 @@ local function spawnCommerceFleet(spawnLocationX, spawnLocationY, tradeRoute)
     freighter.state = stateBeginNewLeg
     freighter.stateBeforeCombat = nil
     freighter.escorts = {}
+    freighter.turnedAround = false --- for infection
 
     --- for unstuck logic
     freighter.nextPosMeasurementAt = getScenarioTime() + 20.0
@@ -303,9 +330,8 @@ local function spawnCommerceFleet(spawnLocationX, spawnLocationY, tradeRoute)
         freighter.escorts[i]:setScanned(freighter:isFriendly(getPlayerShip(-1)))
     end
 
-    if escortCount == 0 then
+    if escortCount == 0 and not freighter:hasJumpDrive() then
         --- warp drive doesn't work with formations at all
-        --- chance of warp drive if no escorts present
         if irandom(0,100) < 70 then
             freighter:setWarpDrive(true)
             freighter:setJumpDrive(false)
@@ -351,6 +377,10 @@ local function updateCommerceFleet(delta, freighter)
                 end
             end
         end
+        return
+    end
+
+    if freighter.state == stateDestroyed then
         return
     end
 

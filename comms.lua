@@ -154,137 +154,28 @@ function randomizedHabCommsFunc()
 end
 
 
-function hfFreighterComms()
-    hfFreighterCommsMissionSpecific()
-end
-
-hfFreighterComms_m1_2_inner = function()
-    setCommsMessage(_("See, a... saboteur... true, a saboteur got on board and activated the self-destruct sequence. We managed to stop them but our jump drive got damaged. " ..
-        "And ehm... we're running low on the oxygen, so vital to human survival, isn't it true? We need to get to a human station, and soon. Can you take us there?"))
-    addCommsReply(
-        _("We will escort you to the nearby " .. minerHab:getCallSign()),
-        function()
-            hfFreighter.gotoMiners = true
-            setCommsMessage(_("Ah, that's perfect! Thank you. Can't wait to breathe more oxygen, true! Setting course now."))
-        end
-    )
-    addCommsReply(
-        _("We will arrange a jump carrier from " .. freeport9:getCallSign()),
-        function()
-            hfFreighter.awaitJumpCarrier = true
-            setCommsMessage(_("Confirm! " .. freeport9:getCallSign() .. ". A lot of traffic there these days. Please take us there soon. " ..
-                "We will await for the jump carrier here, yes. Please arrange it."))
-        end
-    )
-end
-
-hfFreighterComms_m1_2 = function()
-    setCommsMessage(_("<Channel open, but no reply>"))
-    addCommsReply(
-        _(comms_target:getCallSign() .. ", come in!"),
-        function()
-            setCommsMessage(_("<No reply, but you can hear someone breathing on the other side>"))
-            addCommsReply(
-                _("We can hear you breathing, you know?"),
-                function()
-                    setCommsMessage(_("... What do you mean breathing? Ah, true, you mean human breathing, is what you mean... True, I was breathing, thank you very much. " ..
-                        "Listen, I have a favor to ask."))
-                        addCommsReply(
-                            _("Yes?"),
-                            function()
-                                hfFreighterComms_m1_2_inner()
-                            end
-                        )
-                end
-            )
-            addCommsReply(
-                _("This is the Navy, are there any injured?"),
-                function()
-                    setCommsMessage(_("The Navy?... Meaning Humans again? That's true, it's the Human Navy... Why ask?"))
-                    addCommsReply(
-                        _("You're transmitting S.O.S. using your transponder."),
-                        function()
-                            hfFreighter.sosBlinkingEnabled = false
-                            hfFreighter:setCallSign("HF2137")
-                            setCommsMessage(_("What? Ah... that... Everything is fine. It's just broken, see, yes? S.O.S. was false. Let me fix it really quick. " ..
-                                "Listen, I have a favor to ask."))
-                            addCommsReply(
-                                _("Yes?"),
-                                function()
-                                    hfFreighterComms_m1_2_inner()
-                                end
-                            )
-                        end
-                    )
-                    addCommsReply(
-                        _("Just worried. Tell me... souls on board?"),
-                        function()
-                            setCommsMessage(_("Souls? Let me check... only ONE, yes. Listen, I have a favor to ask."))
-                            addCommsReply(
-                                _("Yes?"),
-                                function()
-                                    hfFreighterComms_m1_2_inner()
-                                end
-                            )
-                        end
-                    )
-                end
-            )
-        end
-    )
-end
-
-hfFreighterComms_m1_3_a_1 = function()
-    setCommsMessage(_("We hear that the Kraylor are incoming. We will wait until you resolve the event. Yes. This is interesting."))
-end
-
-hfFreighterComms_m1_3_a = function()
-    setCommsMessage(_("Yes?"))
-    addCommsReply(
-        _("HF2137, everything OK?"),
-        function()
-            setCommsMessage(_("Yes. Status OK. We will keep going to " .. minerHab:getCallSign() .. ", as we need to breathe the oxygen and eat food."))
-            addCommsReply(
-                _("What were you doing here anyways?"),
-                function()
-                    setCommsMessage(_("Waiting... for a long time, yes. Very long time."))
-                    addCommsReply(
-                        _("For what?"),
-                        function()
-                            setCommsMessage(_("A... ship."))
-                            addCommsReply(
-                                _("Where is it? Did they come?"),
-                                function()
-                                    setCommsMessage(_("Yes, oh yes... Ah, but then the saboteur came, as you recall, yes?"))
-                                    addCommsReply(
-                                        _("Yes. Glad we could be of help.")
-                                    )
-                                end
-                            )
-                        end
-                    )
-                end
-            )
-        end
-    )
-end
-
 
 function freeport9Comms()
-    setCommsMessage(_("CIC, Navy HQ, " .. comms_target:getCallSign() .. " here. Come in, " .. comms_source:getCallSign() .. "."))
     freeport9CommsMissionSpecific()
 end
 
-freeport9Comms_m1_1 = function()
+function freeport9Comms_m1_1()
+    setCommsMessage(_("Good day. " .. comms_target:getCallSign() .. " here. What can I do for you?"))
     addCommsReply(
-        _("What are my orders, sir?"),
+        _("Patch me through to Human Navy HQ."),
         function()
-            setCommsMessage(_("Continue combat patrol around " .. freeport9:getCallSign() .. 
-                ". Check in with the other ships in your formation. We might have new orders for you very soon."))
+            setCommsMessage(_("CIC, Navy HQ, " .. comms_target:getCallSign() .. " here. Come in, " .. comms_source:getCallSign() .. "."))
             addCommsReply(
-                _("Aye, sir"),
+                _(comms_source:getCallSign() .. " to HQ, what are our orders, sir?"),
                 function()
-                    setCommsMessage(_("Dismissed."))
+                    setCommsMessage(_("Continue combat patrol around " .. freeport9:getCallSign() .. 
+                        ". Check in with the other ships in your formation. We might have new orders for you very soon."))
+                    addCommsReply(
+                        _("Aye, sir"),
+                        function()
+                            setCommsMessage(_("Dismissed."))
+                        end
+                    )
                 end
             )
         end
@@ -292,15 +183,22 @@ freeport9Comms_m1_1 = function()
 end
 
 function freeport9Comms_m1_2()
+    setCommsMessage(_("Good day. " .. comms_target:getCallSign() .. " here. What can I do for you?"))
     addCommsReply(
-        _("What are my orders, sir?"),
+        _("Patch me through to Human Navy HQ."),
         function()
-            setCommsMessage(_("We received reports on unusual sensor readings not too far from " .. minerHab:getCallSign() .. " in sector " .. minerHab:getSectorName() .. 
-                ". Break off from formation and check it out, solo."))
+            setCommsMessage(_("CIC, Navy HQ, " .. comms_target:getCallSign() .. " here. Come in, " .. comms_source:getCallSign() .. "."))
             addCommsReply(
-                _("Aye, sir"),
+                _(comms_source:getCallSign() .. " reporting in. Orders, sir?"),
                 function()
-                    setCommsMessage(_("Dismissed."))
+                    setCommsMessage(_("We received reports on unusual sensor readings not too far from " .. minerHab:getCallSign() .. " in sector " .. minerHab:getSectorName() .. 
+                        ". Break off from formation and check it out, solo."))
+                    addCommsReply(
+                        _("Aye, sir"),
+                        function()
+                            setCommsMessage(_("Dismissed."))
+                        end
+                    )
                 end
             )
         end
@@ -308,17 +206,61 @@ function freeport9Comms_m1_2()
 end
 
 function freeport9Comms_m1_3_a()
+    setCommsMessage(_("Good day. " .. comms_target:getCallSign() .. " here. What can I do for you?"))
     addCommsReply(
-        _("<give report> What are my orders, sir?"),
+        _("Patch me through to Human Navy HQ."),
         function()
-            setCommsMessage(_("Escort " .. hfFreighter:getCallSign() .. " to ." .. minerHab:getCallSign() .. " in " .. 
-                minerHab:getSectorName() .. ". Make sure it's safe and sound."))
+            setCommsMessage(_("CIC, Navy HQ, " .. comms_target:getCallSign() .. " here. Come in, " .. comms_source:getCallSign() .. "."))
+            addCommsReply(
+                _("<give sitrep report>. What are our orders, sir?"),
+                function()
+                    setCommsMessage(_("Escort " .. hfFreighter:getCallSign() .. " to ." .. minerHab:getCallSign() .. " in " .. 
+                        minerHab:getSectorName() .. ". Make sure it's safe and sound."))
+                end
+            )
         end
     )
 end
 
+function freeport9Comms_m1_4()
+    setCommsMessage(_("Good day. " .. comms_target:getCallSign() .. " here. What can I do for you?"))
+    addCommsReply(
+        _("Patch me through to Human Navy HQ."),
+        function()
+            setCommsMessage(_("CIC, Navy HQ, " .. comms_target:getCallSign() .. " here. Come in, " .. comms_source:getCallSign() .. "."))
+            addCommsReply(
+                _("<give sitrep report>. What should we do, commander?"),
+                function()
+                    setCommsMessage(_("Your report is very concerning. It seems to confirm our intelligence reports about increased Kraylor activity in this system. " ..
+                        "You are to conduct combat patrol along main trade routes between " .. southExitWh:getCallSign() .. " and " .. northExitWh():getCallSign() .. " wormholes. " .. 
+                        "Destroy any encountered hostile Kraylor forces. Piracy won't be tolerated. We will reach out to you once we have more intel. "))
+                end
+            )
+        end
+    )
+end
 
-minerHabComms_m1_3_a = function()
+function freeport9Comms_m1_5()
+    setCommsMessage(_(comms_target:getCallSign() .. " here. Be informed that both departure and arrival times are being delayed. What can I do for you?"))
+    addCommsReply(
+        _("Patch me through to Human Navy HQ."),
+        function()
+            setCommsMessage(_("CIC, Navy HQ, " .. comms_target:getCallSign() .. " here. Come in, " .. comms_source:getCallSign() .. "."))
+            addCommsReply(
+                _("Sir, what's going on?"),
+                function()
+                    setCommsMessage(_("We have a biohazard situation on lower decks. Some sort of alien disease. Thirteen of our men are incapacitated in medbay. " ..
+                        "The Chief Medical Officer says that it's nothing she's ever seen before. We've ordered some additional lab equipment but it's stuck at " ..
+                        borderStation:getCallSign() .. ". There's no time to bring all of it here. She's already been transfered onto your ship. Get her to " ..
+                        borderStation:getCallSign() .. " ASAP. This is of utmost priority. We can't risk an outbreak at such an important trade route. Do not dock " ..
+                        "at any other station, especially the ones without decontamination units."))
+                end
+            )
+        end
+    )
+end
+
+function minerHabComms_m1_3_a()
     addCommsReply(
         _("We've found a damaged freighter."),
         function()
@@ -333,7 +275,7 @@ minerHabComms_m1_3_a = function()
     )
 end
 
-minerHabComms_m1_2 = function()
+function minerHabComms_m1_2()
     setCommsMessage(_("What?"))
     addCommsReply(
         _("Anything unusual happening lately?"),
@@ -384,153 +326,3 @@ minerHabComms_m1_2 = function()
     )
 end
 
-
-function randomizedBdfCommsFunc()
-    local rand = irandom(0, 3)
-    if rand == 0 then
-        return function()
-            setCommsMessage(_("This is " .. comms_target:getCallSign() .. " of the Border Defense Fleet, all systems green."))
-        end
-    elseif rand == 1 then
-        return function()
-            setCommsMessage(_(comms_target:getCallSign() .. " here. Want anything, ask my commander stationed at " .. borderStation:getCallSign() .. "."))
-        end
-    elseif rand == 2 then
-        return function()
-            setCommsMessage(_("They see me rollin'. They hatin'. Patrollin'... huh? I mean... " .. comms_target:getCallSign() .. " out."))
-        end
-    elseif rand == 3 then
-        return function()
-            setCommsMessage(_("We're stationed at " .. borderStation:getCallSign() .. ". Ask there. " .. comms_target:getCallSign() .. " over and out."))
-        end
-    end
-end
-
-kralienFiendComms_1 = function()
-    setCommsMessage(_("Me Roghar raugharR', the humen slayer, whose father is Raghran raugharR', Scourge of the weak, whose father " ..
-        "is Gar raugharR, drinker of blood. We talk. Cease fire. Yes?"))
-    addCommsReply(
-        _("Agreed."),
-        function()
-            ambushState = ambushStateCeaseFire
-            setCommsMessage(_("Okay. I bring friends over."))
-            addCommsReply(
-                _("Wait what?!.."), 
-                function()
-                    setCommsMessage(_("<Channel closed>"))
-                end
-            )
-        end
-    )
-    addCommsReply(
-        _("We don't talk with Kraylors."),
-        function()
-            ambushState = ambushStateAllOutAttack
-            setCommsMessage(_("Glory to raugharR' Clan! We crush maggots!"))
-        end
-    )
-end
-
-kralienFiendComms_2 = function()
-    setCommsMessage(_("Friends coming. I call you back. Await."))
-end
-
-kralienFiendComms_3 = function()
-    setCommsMessage(_("We here to claim a prize. Give us freighter. You no need it anyways."))
-    addCommsReply(
-        _("The freighter is under Human Navy protection."),
-        function()
-            setCommsMessage(_("Ha! I only see a puny frigate, with scared little humies on board. Haha!"))
-            addCommsReply(
-                _("We will call for backup and they will crush you."),
-                function()
-                    setCommsMessage(_("Hahaha! Puny humans think we will wait so long time."))
-                    addCommsReply(
-                        _("On second thought, let's talk this through.."),
-                        kralienFiendComms_3    
-                    )
-                    addCommsReply(
-                        _("That's it. You're going down!"),
-                        function()
-                            setCommsMessage(_("Glory to raugharR' Clan! We crush maggots!"))
-                            ambushState = ambushStateAllOutAttack
-                        end
-                    )
-                end       
-            )
-            addCommsReply(
-                _("Human Navy is the only legitimate authority in this system."),
-                function()
-                    setCommsMessage(_("You funny guy. I like! But no time for jokes!"))
-                    addCommsReply(
-                        _("<back>"),
-                        kralienFiendComms_3
-                    )
-                end       
-            )
-            addCommsReply(
-                _("It's not about the size - it's about technique."),
-                function()
-                    setCommsMessage(_("Haha! This what my father say! Mother not happy! But serious now!"))
-                    addCommsReply(
-                        _("<back>"),
-                        kralienFiendComms_3
-                    )
-                end       
-            )
-            addCommsReply(
-                _("Maybe we're not strong, but we're agile."),
-                function()
-                    setCommsMessage(_("True that. Know what? Give me your Combat Maneuver Drive, we go away."))
-                    addCommsReply(
-                        _("OK <give Combat Maneuver Drive>"),
-                        function()
-                            setCommsMessage(_("Good human. Good bye."))
-                            comms_source:setCanCombatManeuver(false)
-                            comms_source:addReputationPoints(50)
-                            ambushState = ambushStateResolved
-                        end
-                    )
-                    addCommsReply(
-                        _("I don't think so."),
-                        function()
-                            setCommsMessage(_("Maybe you rethink offer later."))
-                            addCommsReply(
-                                _("<back>"),
-                                kralienFiendComms_3
-                            )
-                        end
-                    )
-                end
-            )
-        end
-    )
-    addCommsReply(
-        _("Small fleet against a single frigate. raugharR' clan must be weak."),
-        function()
-            setCommsMessage(_("Argh! raugharR' Clan is the Greatest! My father is Raghran raugharR', Scourrge of the weak, whose father is Gar Raughar, drinker of blood!!!"))
-            addCommsReply(
-                _("You are correct, we apologize."),
-                kralienFiendComms_3
-            )
-            addCommsReply(
-                _("Prove it! We challenge you to a duel."),
-                function()
-                    setCommsMessage(_("Glory to raugharR' Clan! Escort ships, do not interfere!"))
-                    ambushState = ambushStateDuel
-                end
-            )
-        end
-    )
-    addCommsReply(
-        _("Never!"),
-        function()
-            ambushState = ambushStateAllOutAttack
-            setCommsMessage(_("Glory to raugharR' Clan! We crush maggots!"))
-        end
-    )
-end
-
-function kralienFiendComms()
-    kralienFiendCommsMissionSpecific()
-end

@@ -8,14 +8,9 @@ stroke4 = nil
 
 minerHab = nil
 
-hfFreighter = nil
-sosSquawkEnabled = nil
-
-
 
 freeport9CommsMissionSpecific = nil
 minerHabCommsMissionSpecific = nil
-hfFreighterCommsMissionSpecific = nil
 
 northExitWh = nil
 southExitWh = nil
@@ -24,6 +19,12 @@ outsideExitArea = true
 bobsStation = nil
 borderStation = nil
 
+allStationsRefs = {}
+
+--- border
+borderStationCommsMissionSpecific = nil
+borderStationQuarantine = nil
+
 --- terrain
 habs = {}
 
@@ -31,6 +32,12 @@ habs = {}
 commerceFreighters = {}
 tradeRouteSouthToNorth = {}
 tradeRouteNorthToSouth = {}
+
+--- ghosts
+hfFreighterCommsMissionSpecific = nil
+hfFreighter = nil
+sosSquawkEnabled = nil
+
 
 --- ambush
 kralienFiend = nil

@@ -5,30 +5,50 @@ require("./69_mymission/terrain.lua")
 require("./69_mymission/wormholes.lua")
 require("./69_mymission/globals.lua")
 require("./69_mymission/kraylor.lua")
+require("./69_mymission/ghosts.lua")
+require("./69_mymission/border.lua")
 
 
 local numSectorsPerSide
 local currentMission 
 
-function hfFreighterSosBlinking(delta)
-    if not hfFreighter.sosBlinkingEnabled then
-        return
-    end
-    blips = {1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0}
-    currBlip = math.floor(getScenarioTime() * 4) % #blips
 
-    if blips[currBlip] == 1 then
-        hfFreighter:setCallSign("HF2137")
-    else       
-        hfFreighter:setCallSign("")
+
+local mission1_5_setup_done = false
+local function mission1_5_plagueQuarantineStart(delta)
+    if not mission1_5_setup_done then
+        mission1_5_setup_done = true
+
+        freeport9:sendCommsMessage(
+            getPlayerShip(-1),
+            _(getPlayerShip(-1):getCallSign() .. ", report to " .. freeport9:getCallSign() .. " Command HQ. We have an unusual situation on our hands.")
+        )
+        freeport9CommsMissionSpecific = freeport9Comms_m1_5
+        borderStationCommsMissionSpecific = borderStationComms_m1_5
     end
 end
+
 
 local mission1_4_setup_done = false
 local function mission1_4_kraylorSkirmishes(delta)
     if not mission1_4_setup_done then
         activateKraylorAttacks()
+
+        freeport9:sendCommsMessage(
+            getPlayerShip(-1),
+            _(getPlayerShip(-1):getCallSign() .. ", report to " .. freeport9:getCallSign() .. " Command HQ, we've got another assignment for you.")
+        )
+
+        freeport9CommsMissionSpecific = freeport9Comms_m1_4
+        minerHabCommsMissionSpecific = nil
+        hfFreighterCommsMissionSpecific = nil
+
         mission1_4_setup_done = true
+    end
+
+    if freeport9.plagueAlertLevel >= 3 then
+        --- todo: comms and description for decontamination unit
+        currentMission = mission1_5_plagueQuarantineStart
     end
 end
 
@@ -47,6 +67,7 @@ local function mission1_3a_goto_miners(delta)
 
     if ambushState == ambushStateDone then
         currentMission = mission1_4_kraylorSkirmishes
+
     end
 end
 
@@ -88,17 +109,26 @@ local function mission1_1_prologue(delta)
     if getScenarioTime() >= 30 and stroke2.talked and stroke4.talked then
         stroke1:sendCommsMessage(
             getPlayerShip(-1),
-            _(getPlayerShip(-1):getCallSign() .. ", report to Freeport 9 command.")
+            _(getPlayerShip(-1):getCallSign() .. ", report to " .. freeport9:getCallSign() .. " Command HQ.")
         )
         currentMission = mission1_2_lookForSignal
     end
 
 end
 
-
 function myInit()
-    -- currentMission = mission1_1_prologue
-    currentMission = mission1_4_kraylorSkirmishes
+    print([[
+    ______     _      _     
+    / ____/____(_)____(_)____
+   / /   / ___/ / ___/ / ___/
+  / /___/ /  / (__  ) (__  ) 
+  \____/_/  /_/____/_/____/   Initializing mission.
+  ]])
+
+                             
+  
+
+    currentMission = mission1_5_plagueQuarantineStart
 
 
     player = PlayerSpaceship():setFaction("Human Navy"):setTemplate("Phobos M3P"):setCallSign("Stroke 3"):setWarpDrive(true)
@@ -106,9 +136,17 @@ function myInit()
 
     player.nearExitWormhole = false
     player.nearMapBoundary = false
+
+    player.paidDockingFees = false
+    player.hasOnShorePermit = false
+
+    player:setReputationPoints(1000)
     
+
     freeport9 = SpaceStation():setTemplate("Medium Station"):setFaction("Human Navy"):setCallSign("Freeport 9"):setPosition(2000, 2000):setHeading(270):setCommsFunction(freeport9Comms)
     local freeport9X, freeport9Y = freeport9:getPosition()
+    freeport9.plagueAlertLevel = 0
+    freeport9.hasDecontaminationUnit = true
 
     --- TODO: less probes??..
     stroke1 = CpuShip():setFaction("Human Navy"):setTemplate("Phobos M3"):setCallSign("Stroke 1"):setScanned(true):setPosition(-1000, 0):setHeading(270):setCommsFunction(stroke1Comms):orderDefendTarget(freeport9):setWarpDrive(true)
@@ -134,7 +172,7 @@ function myInit()
 
     --- todo: station comms
     --- todo: part of this escort can be called for a mission but will lead to different outcome (smugglers pass by border control maybe?)
-    borderStation = SpaceStation():setTemplate("Small Station"):setFaction("Human Navy"):setCallSign("Customs"):setPosition(-81260, 140904)
+    borderStation = SpaceStation():setTemplate("Small Station"):setFaction("Human Navy"):setCallSign("Customs"):setPosition(-81260, 140904):setCommsFunction(borderStationComms)
 
     CpuShip():setFaction("Human Navy"):setTemplate("Weapons platform"):setCallSign("BDF88"):setPosition(-80703, 141433):orderRoaming():setCommsFunction(randomizedBdfCommsFunc()):setScanned(true)
 
@@ -149,6 +187,9 @@ function myInit()
     hfFreighter.initialX, hfFreighter.initialY = hfFreighter:getPosition()
     hfFreighter:setRadarSignatureInfo(hfFreighter:getRadarSignatureGravity(), 1.0, 0.0)
 
+    --- why? one icicle is long \ another is short \ why is it like that?
+
+
     --- jump cruiser picks up hfFreighter
     -- jumpC = CpuShip():setFaction("Independent"):setTemplate("Jump Carrier"):setCallSign("JC"):setPosition(146708, 142000)
     -- hfFreighter:orderDock(jumpC)
@@ -161,6 +202,9 @@ function myInit()
     initializeMinerHabs()
     initializeCommerce()
     initializeKraylor()
+    initializeGhosts()
+
+    borderStationInit()
 
     local minerHabX, minerHabY = minerHab:getPosition()
 
@@ -229,4 +273,8 @@ function myUpdate(delta)
 
     --- todo: add rep for killing those guys
     kraylorSkirmishesUpdate(delta)
+
+    ghostsPlagueUpdate(delta)
+
+    borderStationUpdate(delta)
 end
