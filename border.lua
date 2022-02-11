@@ -253,13 +253,38 @@ function borderStationComms_m1_5()
                 addCommsReply(
                     _("We've arrived <let the CMO onto the station>."),
                     function()
-                        --- todo: comms and description for decontamination unit
-                        borderStation.hasDecontaminationUnit = true
                         borderStationQuarantine = true
                         setCommsMessage(_("Thank you, I'll get to work immediately. A quarantine zone will be setup in the docking bay. " ..
                             "Also, we have orders from HQ to deny access to the wormhole to all non-Human ships. We still don't know the " ..
                             "nature of the disease. I recommend you refrain from docking to non-Human controlled stations, as only those have decontamination units " ..
                             "to stop the spread, at least for now. That makes it this station and " .. freeport9:getCallSign() .. "."))
+                    end
+                )
+            end
+        )
+    end
+end
+
+function borderStationComms_m1_7()
+    if comms_source:isDocked(comms_target) then
+        addCommsReply(
+            _("<Talk to the Chief Medical Officer>"),
+            function()
+                setCommsMessage(_("There's no time to waste. I've analized your conversation with the Ghost. It confirms my findings. The infection... it works on the " ..
+                    "biomolecular level, transforming the patient and melding it with surrounding electronics. The patient is kept alive at all times, but, as you " ..
+                    "can probably imagine, the experience is agonising. I call it... the melding plague."))
+                addCommsReply(
+                    _("Is there a cure?"),
+                    function()
+                        setCommsMessage(_("Unfortunately not... I can't even begin to imagine what would happen if the plague reached Human Worlds. The melding plague " ..
+                            "must be stopped at all costs. The line must be drawn here. This far, no further."))
+                        registerRetryCallback(5, function()
+                            return freeport9:sendCommsMessage(
+                                getPlayerShip(-1),
+                                _(getPlayerShip(-1):getCallSign() .. ", report to " .. freeport9:getCallSign() .. "."))
+                            end
+                        )
+                        freeport9CommsMissionSpecific = freeport9Comms_m1_7
                     end
                 )
             end

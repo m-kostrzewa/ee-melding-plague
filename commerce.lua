@@ -366,6 +366,7 @@ end
 local function updateCommerceFleet(delta, freighter)
     if not freighter:isValid() then
         if freighter.state ~= stateDestroyed then
+            print("[Commerce] a freighter convoy destroyed.")
             freighter.state = stateDestroyed
             if irandom(1, 100) < 50 then
                 spawnCommerceFleetAtWormhole(northExitWh)
@@ -431,10 +432,18 @@ local function updateCommerceFleet(delta, freighter)
     end
 
     local dest = freighter.tradeRoute[freighter.currentLeg]
+    if not dest:isValid() then
+        print("[Commerce] " .. freighter:getCallSign() .. " station is not valid, skipping it")
+        freighter.state = stateBeginNewLeg
+        freighter.currentLeg = freighter.currentLeg + 1
+        return
+    end
 
     if freighter.state == stateBeginNewLeg then
         if dest.typeName == "SpaceStation" then
             print("[Commerce] " .. freighter:getCallSign() .. " beginning new leg to " .. dest:getCallSign())
+
+
 
             if not dest:isFriendly(dest) then
                 print("[Commerce] " .. freighter:getCallSign() .. " station is not friendly, skipping it")
@@ -540,19 +549,5 @@ end
 function updateCommerce(delta)
     for i = 1, #commerceFreighters do
         updateCommerceFleet(delta, commerceFreighters[i])
-    end
-end
-
-function maybeRespawnCommerceFleet(wormhole, teleportee)
-    for i=1, #commerceFreighters do
-        if commerceFreighters[i] == teleportee then
-            --- yep, it was a freighter that just jumped.
-            --- therefore, respawn a new fleet from the other wormhole
-            if wormhole == southExitWh then
-                spawnCommerceFleetAtWormhole(northExitWh)
-            else
-                spawnCommerceFleetAtWormhole(southExitWh)
-            end
-        end
     end
 end

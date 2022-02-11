@@ -1,31 +1,33 @@
 player = nil
 
-freeport9 = nil
-
-stroke1 = nil
-stroke3 = nil
-stroke4 = nil
-
-minerHab = nil
-
-
-freeport9CommsMissionSpecific = nil
-minerHabCommsMissionSpecific = nil
-
 northExitWh = nil
 southExitWh = nil
 outsideExitArea = true
 
-bobsStation = nil
-borderStation = nil
-
 allStationsRefs = {}
 
+playerKnowsAboutAlternative = true
+
+--- navy
+freeport9CommsMissionSpecific = nil
+stroke1CommsMissionSpecific = nil
+stroke2CommsMissionSpecific = nil
+stroke4CommsMissionSpecific = nil
+
+freeport9 = nil
+stroke1 = nil
+stroke3 = nil
+stroke4 = nil
+
 --- border
+borderStation = nil
 borderStationCommsMissionSpecific = nil
 borderStationQuarantine = nil
 
---- terrain
+--- independent
+minerHab = nil
+minerHabCommsMissionSpecific = nil
+bobsStation = nil
 habs = {}
 
 --- commerce
@@ -37,7 +39,7 @@ tradeRouteNorthToSouth = {}
 hfFreighterCommsMissionSpecific = nil
 hfFreighter = nil
 sosSquawkEnabled = nil
-
+foundSourceOfPlague = false
 
 --- ambush
 kralienFiend = nil

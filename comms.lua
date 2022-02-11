@@ -1,13 +1,48 @@
 require("./69_freeport9_mayhem/globals.lua")
 
 
-function stroke1Comms()
-    setCommsMessage(_("Eyes open, " .. comms_source:getCallSign() .. ". I don't want to end up dead because you were daydreaming. " .. comms_target:getCallSign() .. " out."))
-    addCommsReply(_("Aye, sir."))
+function stroke1Comms_m1_1()
+    if comms_target.talked then
+        setCommsMessage(_("I told you to focus, " .. comms_source:getCallSign() .. "!"))
+        comms_target.likesPlayer = false
+    else
+        setCommsMessage(_("Eyes open, " .. comms_source:getCallSign() .. ". I don't want to end up dead because you were daydreaming. " .. comms_target:getCallSign() .. " out."))
+        addCommsReply(_("Aye, sir."), 
+            function()
+                comms_target.likesPlayer = true
+            end
+        )
+    end
     comms_target.talked = true
 end
 
-function stroke2Comms()
+function stroke1Comms_m1_7()
+    setCommsMessage(_("HQ just designated your vessel as hostile. What's going on?"))
+    addCommsReply(_("Commander ordered us to purge this system. We declined."), 
+        function()
+            if comms_target.likesPlayer then
+                setCommsMessage(_("... I see. You're a good man. We will join you. Lead the way."))
+                comms_target:orderDefendTarget(comms_source)
+                comms_target:setFaction("Ghosts")
+
+                registerRetryCallback(5, function()
+                    return stroke2:sendCommsMessage(
+                        getPlayerShip(-1),
+                        _("We need to talk!")
+                    )
+                end)
+            else
+                setCommsMessage(_("Traitor!"))
+            end
+        end
+    )
+end
+
+function stroke1Comms()
+    stroke1CommsMissionSpecific()
+end
+
+function stroke2Comms_m1_1()
     setCommsMessage(_(comms_target:getCallSign() .. "... can you speak up?"))
     if comms_target.talked then
         addCommsReply(
@@ -54,7 +89,26 @@ function stroke2Comms()
     end
 end
 
-function stroke4Comms()
+function stroke2Comms_m1_7()
+    setCommsMessage(_("Explain yourself!"))
+    addCommsReply(_("Commander ordered us to purge this system. We declined."), 
+        function()
+            if comms_target.likesPlayer then
+                setCommsMessage(_("I believe you. I'll help you, but we really need to get a drink afterwards."))
+                comms_target:orderDefendTarget(comms_source)
+                comms_target:setFaction("Ghosts")
+            else
+                setCommsMessage(_("I... don't believe you. Sorry."))
+            end
+        end
+    )
+end
+
+function stroke2Comms()
+    stroke2CommsMissionSpecific()
+end
+
+function stroke4Comms_m1_1()
     setCommsMessage(_(comms_target:getCallSign() .. " here."))
     if comms_target.talked then
         addCommsReply(
@@ -67,8 +121,7 @@ function stroke4Comms()
         addCommsReply(
             _("Status?"),
             function()
-                setCommsMessage(_("All systems green... except none of us has any probes left, as you know. The promised equipment didn't arrive. " ..
-                    "It's like the Command forgot about us here."))
+                setCommsMessage(_("All systems green... except our squadron wasn't relieved for weeks. It's like the Command forgot about us here."))
                 addCommsReply(
                     _("Captured outposts are never high on priority list."),
                     function()
@@ -110,9 +163,26 @@ function stroke4Comms()
     end
 end
 
-function minerHabComms()
-    minerHabCommsMissionSpecific()
+
+function stroke4Comms_m1_7()
+    setCommsMessage(_("So, you've turned sides!"))
+    addCommsReply(_("Commander ordered us to purge this system. We declined."), 
+        function()
+            if comms_target.likesPlayer then
+                setCommsMessage(_("Tch. Anything is better than this place. I'll join you."))
+                comms_target:orderDefendTarget(comms_source)
+                comms_target:setFaction("Ghosts")
+            else
+                setCommsMessage(_("Your choice... I need the paycheck."))
+            end
+        end
+    )
 end
+
+function stroke4Comms()
+    stroke4CommsMissionSpecific()
+end
+
 
 function randomizedHabCommsFunc()
     local rand = irandom(0, 3)
@@ -249,30 +319,122 @@ function freeport9Comms_m1_5()
             addCommsReply(
                 _("Sir, what's going on?"),
                 function()
-                    setCommsMessage(_("We have a biohazard situation on lower decks. Some sort of alien disease. Thirteen of our men are incapacitated in medbay. " ..
+                    setCommsMessage(_("We have a biohazard situation on lower decks. Some sort of alien disease, the nature of which is strictly confidential. " ..
+                        "You will be informed on a need-to-know basis. Suffice for you to know that thirteen of our men are incapacitated in medbay. " ..
                         "The Chief Medical Officer says that it's nothing she's ever seen before. We've ordered some additional lab equipment but it's stuck at " ..
                         borderStation:getCallSign() .. ". There's no time to bring all of it here. She's already been transfered onto your ship. Get her to " ..
-                        borderStation:getCallSign() .. " ASAP. This is of utmost priority. We can't risk an outbreak at such an important trade route. Do not dock " ..
-                        "at any other station, especially the ones without decontamination units."))
+                        borderStation:getCallSign() .. " ASAP. This is of utmost priority. We can't risk an outbreak at such an important trade route.\n\n" ..
+                        "One more thing: do not dock at any other station on your way there."))
                 end
             )
         end
     )
 end
 
-function minerHabComms_m1_3_a()
+function freeport9Comms_m1_6()
+    setCommsMessage(_(comms_target:getCallSign() .. " here. Be informed that both departure and arrival times are being delayed. What can I do for you?"))
     addCommsReply(
-        _("We've found a damaged freighter."),
+        _("Patch me through to Human Navy HQ."),
         function()
-            setCommsMessage(_("Good. And?"))
+            setCommsMessage(_("CIC, Navy HQ, " .. comms_target:getCallSign() .. " here. Come in, " .. comms_source:getCallSign() .. "."))
             addCommsReply(
-                _("They will dock with you for emergency repairs."),
+                _("Sir, what's going on?"),
                 function()
-                    setCommsMessage(_("We will gladly help a fellow civilian."))
+                    setCommsMessage(_("I'm not going to lie to you. The situation is dire. The... infection, it's very deadly. We still don't know where it's " ..
+                        "coming from. We think it is carried by crews coming from the stations within the nebula, but we don't know which station exactly.\n\n" ..
+                        "Your task is to approach freighters and look for unusual biological and electrical readings. Ask the freighter captains for their itinerary. " ..
+                        "Figure out which station is the infection coming from, but do not engage or come close to it. Try to contact it instead."))
                 end
             )
         end
     )
+end
+
+function freeport9Comms_m1_7()
+    setCommsMessage(_(comms_target:getCallSign() .. " here. Be informed that both departure and arrival times are being delayed. What can I do for you?"))
+    addCommsReply(
+        _("Patch me through to Human Navy HQ."),
+        function()
+            setCommsMessage(_("CIC, Navy HQ, " .. comms_target:getCallSign() .. " here. Come in, " .. comms_source:getCallSign() .. "."))
+            addCommsReply(
+                _("Sir, what's going on?"),
+                function()
+                    setCommsMessage(_("We've just received report from the Chief Medical Officer. This entire system must be purged. All non-Human controlled stations " ..
+                        "must be annihilated. It's the only way."))
+                    addCommsReply(
+                        _("Sir, what about civilians?"),
+                        function()
+                            setCommsMessage(_("Necessary losses. They will be commemorated."))
+                            if playerKnowsAboutAlternative then
+                                addCommsReply(
+                                    _("Sir, but the Ghost offered us an alternative..."),
+                                    function()
+                                        setCommsMessage(_("Untrustworthy. You've got your orders. Dismissed."))
+                                        addCommsReply(
+                                            _("Aye sir <side with the Human Navy>."),
+                                            function()
+                                                setCommsMessage(_("Dismissed."))
+                                                freeport9CommsMissionSpecific = nil
+                                            end
+                                        )
+                                        addCommsReply(
+                                            _("We refuse to follow unlawful orders. <side with the Ghost>"),
+                                            function()
+                                                setCommsMessage(_("Traitor!"))
+
+                                                comms_source:setFaction("Ghosts")
+                                                registerRetryCallback(5, function()
+                                                    return stroke1:sendCommsMessage(
+                                                        getPlayerShip(-1),
+                                                        _(getPlayerShip(-1):getCallSign() .. ", this is " .. stroke1:getCallSign() .. ". What's going on?")
+                                                    )
+                                                end)
+                                                stroke1CommsMissionSpecific = stroke1Comms_m1_7
+                                                stroke2CommsMissionSpecific = stroke2Comms_m1_7
+                                                stroke4CommsMissionSpecific = stroke4Comms_m1_7
+                                                freeport9CommsMissionSpecific = nil
+                                            end
+                                        )
+                                    end
+                                )
+                            else
+                                addCommsReply(
+                                    _("Aye sir <side with the Human Navy>."),
+                                    function()
+                                        setCommsMessage(_("Dismissed."))
+                                        freeport9CommsMissionSpecific = nil
+                                    end
+                                )
+                            end
+
+                        end
+                    )
+
+                end
+            )
+        end
+    )
+end
+
+function freeport9Comms_m1_7_end()
+    setCommsMessage(_(comms_target:getCallSign() .. " here. Be informed that both departure and arrival times are being delayed. What can I do for you?"))
+    addCommsReply(
+        _("Patch me through to Human Navy HQ."),
+        function()
+            setCommsMessage(_("CIC, Navy HQ, " .. comms_target:getCallSign() .. " here. Come in, " .. comms_source:getCallSign() .. "."))
+            addCommsReply(
+                _("Sir, what's going on?"),
+                function()
+                    setCommsMessage(_("All potential plague sources have been eliminated. Good job. Now, back to patrol duty."))
+                    victory("Human Navy")
+                end
+            )
+        end
+    )
+end
+
+function minerHabComms()
+    minerHabCommsMissionSpecific()
 end
 
 function minerHabComms_m1_2()
@@ -326,3 +488,36 @@ function minerHabComms_m1_2()
     )
 end
 
+
+function minerHabComms_m1_3_a()
+    setCommsMessage(_("What?"))
+    addCommsReply(
+        _("We've found a damaged freighter."),
+        function()
+            setCommsMessage(_("Good. And?"))
+            addCommsReply(
+                _("They will dock with you for emergency repairs."),
+                function()
+                    setCommsMessage(_("We will gladly help a fellow unaffiliated freelancer."))
+                end
+            )
+        end
+    )
+end
+
+function minerHabComms_m1_6()
+    setCommsMessage(_("... help.... us...")) 
+    addCommsReply(
+        _(comms_target:getCallSign() .. ", come in!"),
+        function()
+            setCommsMessage(_("... kill... us...."))
+            registerRetryCallback(5, function()
+                return hfFreighter:sendCommsMessage(
+                    getPlayerShip(-1),
+                    _("Please excuse my children. Is there anything you would like to discuss?")
+                )
+            end)
+            hfFreighterCommsMissionSpecific = hfFreighterComms_m1_6
+        end
+    )
+end

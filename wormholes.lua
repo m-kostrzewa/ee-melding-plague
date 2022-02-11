@@ -6,9 +6,6 @@ function initializeWormholes()
         if teleportee.typeName == "PlayerSpaceship" then
             victory("Independent")
         else
-            maybeRespawnCommerceFleet(self, teleportee)
-            local px, py = teleportee:getPosition()
-            ElectricExplosionEffect():setPosition(px, py):setSize(irandom(300, 600)):setOnRadar(true)
             teleportee:destroy()
         end
     end)
@@ -18,9 +15,6 @@ function initializeWormholes()
         if teleportee.typeName == "PlayerSpaceship" then
             victory("Independent")
         else
-            maybeRespawnCommerceFleet(self, teleportee)
-            local px, py = teleportee:getPosition()
-            ElectricExplosionEffect():setPosition(px, py):setSize(irandom(300, 600)):setOnRadar(true)
             teleportee:destroy()
         end
     end)

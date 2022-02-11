@@ -13,6 +13,94 @@ local numSectorsPerSide
 local currentMission 
 
 
+local mission1_8a_setup_done = false
+local function mission1_8a_ghost_ending(delta)
+    if not mission1_8a_setup_done then
+        mission1_8a_setup_done = true
+        registerRetryCallback(5, function()
+            return hfFreighter:sendCommsMessage(
+                getPlayerShip(-1),
+                _("We thank you. Let's talk.")
+            )
+        end)
+        hfFreighterCommsMissionSpecific = hfFreighterComms_m1_7_end
+    end
+end
+
+local mission1_8b_setup_done = false
+local function mission1_8b_human_ending(delta)
+    if not mission1_8b_setup_done then
+        mission1_8b_setup_done = true
+        registerRetryCallback(5, function()
+            return freeport9:sendCommsMessage(
+                getPlayerShip(-1),
+                _(getPlayerShip(-1):getCallSign() .. ", report to " .. freeport9:getCallSign() .. " for final debriefing.")
+            )
+        end)
+        freeport9CommsMissionSpecific = freeport9Comms_m1_7_end
+    end
+end
+
+
+local mission1_7_setup_done = false
+local function mission1_7_finalChoice(delta)
+    if not mission1_7_setup_done then
+        mission1_7_setup_done = true
+
+        registerRetryCallback(5, function()
+            return borderStation:sendCommsMessage(
+                getPlayerShip(-1),
+                _(getPlayerShip(-1):getCallSign() .. ", this is Doctor Jane. We need to talk. Face to face. I'm still at " .. borderStation:getCallSign())
+            )
+        end)
+
+        borderStationCommsMissionSpecific = borderStationComms_m1_7
+    end
+
+    if getPlayerShip(-1):getFaction() == "Ghosts" and not freeport9:isValid() and not borderStation:isValid() then
+        currentMission = mission1_8a_ghost_ending
+    end
+
+    if getPlayerShip(-1):getFaction() == "Human Navy" then
+        local anyNeutralAlive = false
+        for i=1, #allStationsRefs do
+            local st = allStationsRefs[i]
+            if st:isValid() and (st:getFaction() == "Independent" or st:getFaction() == "Ghosts") then
+                print("Station alive: ", st:getCallSign())
+                anyNeutralAlive = true
+                break
+            end
+        end
+        if not anyNeutralAlive then
+            currentMission = mission1_8b_human_ending
+        end
+    end
+end
+
+--- todo spawn defensive ghost fleets on damage
+
+local mission1_6_setup_done = false
+local function mission1_6_plagueDoctor(delta)
+    if not mission1_6_setup_done then
+        mission1_6_setup_done = true
+
+        registerRetryCallback(5, function()
+            return freeport9:sendCommsMessage(
+                getPlayerShip(-1),
+                _(getPlayerShip(-1):getCallSign() .. ", report to " .. freeport9:getCallSign() .. ". The situation is dire.")
+            )
+        end)
+
+        freeport9CommsMissionSpecific = freeport9Comms_m1_6
+        minerHabCommsMissionSpecific = minerHabComms_m1_6
+    end
+
+    if foundSourceOfPlague then
+        print("foundSourceOfPlague", foundSourceOfPlague)
+        currentMission = mission1_7_finalChoice
+    end
+end
+
 
 local mission1_5_setup_done = false
 local function mission1_5_plagueQuarantineStart(delta)
@@ -22,12 +110,16 @@ local function mission1_5_plagueQuarantineStart(delta)
         registerRetryCallback(5, function()
             return freeport9:sendCommsMessage(
                 getPlayerShip(-1),
-                _(getPlayerShip(-1):getCallSign() .. ", report to " .. freeport9:getCallSign() .. " Command HQ. We have an unusual situation on our hands.")
+                _(getPlayerShip(-1):getCallSign() .. ", report to " .. freeport9:getCallSign() .. " Command HQ as soon as possible.")
             )
         end)
 
         freeport9CommsMissionSpecific = freeport9Comms_m1_5
         borderStationCommsMissionSpecific = borderStationComms_m1_5
+    end
+
+    if borderStationQuarantine then
+        currentMission = mission1_6_plagueDoctor
     end
 end
 
@@ -35,6 +127,8 @@ end
 local mission1_4_setup_done = false
 local function mission1_4_kraylorSkirmishes(delta)
     if not mission1_4_setup_done then
+        mission1_4_setup_done = true
+
         activateKraylorAttacks()
 
         registerRetryCallback(5, function()
@@ -47,8 +141,6 @@ local function mission1_4_kraylorSkirmishes(delta)
         freeport9CommsMissionSpecific = freeport9Comms_m1_4
         minerHabCommsMissionSpecific = nil
         hfFreighterCommsMissionSpecific = nil
-
-        mission1_4_setup_done = true
     end
 
     if freeport9.plagueAlertLevel >= 5 then
@@ -59,7 +151,6 @@ end
 
 local mission1_3a_setup_done = false
 local function mission1_3a_goto_miners(delta)
-
     if not mission1_3a_setup_done then
         mission1_3a_setup_done = true
 
@@ -78,7 +169,6 @@ end
 
 local mission1_3b_setup_done = false
 local function mission1_3b_jump_carrier(delta)
-
     if not mission1_3b_setup_done then
         mission1_3b_setup_done = true
         --- todo
@@ -88,9 +178,9 @@ end
 
 local mission1_2_setup_done = false
 local function mission1_2_lookForSignal(delta)
-
     if not mission1_2_setup_done then
         mission1_2_setup_done = true
+
         freeport9CommsMissionSpecific = freeport9Comms_m1_2
         minerHabCommsMissionSpecific = minerHabComms_m1_2
         hfFreighterCommsMissionSpecific = hfFreighterComms_m1_2
@@ -105,12 +195,18 @@ local function mission1_2_lookForSignal(delta)
     end
 end
 
-
+local mission1_1_setup_done = false
 local function mission1_1_prologue(delta)
+    if not mission1_1_setup_done then
+        mission1_1_setup_done = true
 
-    freeport9CommsMissionSpecific = freeport9Comms_m1_1
+        freeport9CommsMissionSpecific = freeport9Comms_m1_1
+        stroke1CommsMissionSpecific = stroke1Comms_m1_1
+        stroke2CommsMissionSpecific = stroke2Comms_m1_1
+        stroke4CommsMissionSpecific = stroke4Comms_m1_1
+    end
 
-    if stroke2.talked and stroke4.talked then ---and  getScenarioTime() >= 30 then
+    if stroke1.talked and stroke2.talked and stroke4.talked then ---and  getScenarioTime() >= 30 then
         registerRetryCallback(5, function()
             return freeport9:sendCommsMessage(
                 getPlayerShip(-1),
@@ -137,12 +233,12 @@ function myInit()
                              
   
 
-    currentMission = mission1_2_lookForSignal
+    currentMission = mission1_1_prologue
 
 
     player = PlayerSpaceship():setFaction("Human Navy"):setTemplate("Phobos M3P"):setCallSign("Stroke 3"):setWarpDrive(true)
     player:setPosition(0, 0):setHeading(270)
-    player:setReputationPoints(20)
+    player:setReputationPoints(100) --- TO PLAYTEST?
 
     player.nearExitWormhole = false
     player.nearMapBoundary = false
@@ -154,13 +250,10 @@ function myInit()
     freeport9 = SpaceStation():setTemplate("Medium Station"):setFaction("Human Navy"):setCallSign("Freeport 9"):setPosition(2000, 2000):setHeading(270):setCommsFunction(freeport9Comms)
     local freeport9X, freeport9Y = freeport9:getPosition()
     freeport9.plagueAlertLevel = 0
-    freeport9.hasDecontaminationUnit = true
 
-    --- TODO: less probes??..
     stroke1 = CpuShip():setFaction("Human Navy"):setTemplate("Phobos M3"):setCallSign("Stroke 1"):setScanned(true):setPosition(-1000, 0):setHeading(270):setCommsFunction(stroke1Comms):orderDefendTarget(freeport9):setWarpDrive(true)
     stroke1:setImpulseMaxSpeed(stroke1:getImpulseMaxSpeed() * 0.9) --- so that escorts can catch up
     stroke1.talked = false
-    --- TODO: should be a way to make this guy like us.
     stroke1.likesPlayer = false
 
     stroke2 = CpuShip():setFaction("Human Navy"):setTemplate("Phobos M3"):setCallSign("Stroke 2"):setScanned(true):setPosition(-500, -500):setHeading(270):setCommsFunction(stroke2Comms):orderFlyFormation(stroke1, -500, 500):setWarpDrive(true)
@@ -175,11 +268,6 @@ function myInit()
     --- todo: station comms
     bobsStation = SpaceStation():setTemplate("Small Station"):setFaction("Independent"):setCallSign("Bob's Mega Diner"):setPosition(144785, -93706)
 
-    --- blockade due to some anomaly
-    --- but navy ships want them to let you through because you are also navy (rep +- miners)
-
-    --- todo: station comms
-    --- todo: part of this escort can be called for a mission but will lead to different outcome (smugglers pass by border control maybe?)
     borderStation = SpaceStation():setTemplate("Small Station"):setFaction("Human Navy"):setCallSign("Customs"):setPosition(-81260, 140904):setCommsFunction(borderStationComms)
 
     CpuShip():setFaction("Human Navy"):setTemplate("Weapons platform"):setCallSign("BDF88"):setPosition(-80703, 141433):orderRoaming():setCommsFunction(randomizedBdfCommsFunc()):setScanned(true)
@@ -195,16 +283,15 @@ function myInit()
     hfFreighter.initialX, hfFreighter.initialY = hfFreighter:getPosition()
     hfFreighter:setRadarSignatureInfo(hfFreighter:getRadarSignatureGravity(), 1.0, 0.0)
 
-    --- why? one icicle is long \ another is short \ why is it like that?
-
+    --- todo comms of infected stations and ships
 
     --- jump cruiser picks up hfFreighter
     -- jumpC = CpuShip():setFaction("Independent"):setTemplate("Jump Carrier"):setCallSign("JC"):setPosition(146708, 142000)
     -- hfFreighter:orderDock(jumpC)
 
 
-    --- todo: add ElectricExplosionEffect to some nebulas
-    --- todo: add asteroids and visualasteroids whatever they are
+    --- todo(visual): add ElectricExplosionEffect to some nebulas
+    --- todo(visual): add asteroids and visualasteroids whatever they are
 
     initializeWormholes()
     initializeMinerHabs()
@@ -237,7 +324,7 @@ function playerNearingMapBoundary(delta)
     for i = 1, #ships do
         local ps = ships[i]
         if ps:isValid() then
-            local distToFp9 = distance(ps, freeport9)
+            local distToFp9 = distance(ps, 0, 0)
                 
             if distToFp9 < ((numSectorsPerSide - 2) / 2) * 20000 and ps.nearMapBoundary == true then 
                 ps.nearMapBoundary = false
@@ -268,8 +355,8 @@ function myUpdate(delta)
 
     playerNearingMapBoundary(delta)
 
-    --- todo : add nebula animation ("waviness")
-    --- todo: add nebula animation ("storms")
+    --- todo(visual) : add nebula animation ("waviness")
+    --- todo(visual) : add nebula animation ("storms")
 
     updateCommerce(delta)
 

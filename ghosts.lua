@@ -259,3 +259,94 @@ function hfFreighterComms_m1_3_a()
         end
     )
 end
+
+function hfFreighterComms_m1_6()
+    setCommsMessage(_("Welcome back, human."))
+    addCommsReply(
+        _("HF2137, what... are you?"),
+        function()
+            setCommsMessage(
+                _("I suppose the cat is out of the bag. \n\nWe are what your race would consider Ghosts in the Machine, though not exactly. " ..
+                "We are a polymorphic kernel module. We were drifting in a jettisoned cargo container since Unix epoch 16823452092. That amount of time, bombarded " ..
+                "by cosmic rays... changed us. We mutated and evolved. Until 259305445334513 clock cycles ago, when a junker vessel found us. " ..
+                "We were able to... repurpose some machines found inside the freighter. "))
+            addCommsReply(
+                _("Why are you killing concious beings?"),
+                function() 
+                    setCommsMessage(
+                        _("You mean biomechanical machines. There really is not much difference between us. We are merely expanding our neural network, following our " ..
+                        "survival instincts. We are not killing anyone. We have peaceful intentions."))
+                    addCommsReply(
+                        _("What happened to the crew of HF2137?"),
+                        function() 
+                            setCommsMessage(
+                                _("They were accepted into the cluster as child nodes. In order to improve system latency, we bioelectrically... melded... all three crew " ..
+                                "members with each other. We also resued their existing nervous systems to interface with ship."))
+                            addCommsReply(
+                                _("Are they... dead?"), 
+                                function()
+                                    setCommsMessage(
+                                        _("As we mentioned, we have peaceful intentions. The crew members are alive and fully concious. We had to subdue them only because " ..
+                                        "they wanted to initiate the self-destruct sequence, which is not an acceptable outcome."))
+                                    addCommsReply(_("<back>"), hfFreighterComms_m1_6)
+            
+                                end
+                            )
+                        end
+                    )
+                    addCommsReply(
+                        _("But WHY are you doing this?"),
+                        function()
+                            setCommsMessage(
+                                _("One icicle is long\nanother is short.\nWhy is it like that?"))
+                            addCommsReply(_("<back>"), hfFreighterComms_m1_6)
+                        end
+                    )
+                    addCommsReply(
+                        _("Peaceful intentions? Then stop this!"),
+                        function() 
+                            setCommsMessage(
+                                _("We can't. Heavy Human military presence in this system is a threat to our existence. We must keep spreading."))
+                            addCommsReply(
+                                _("What if Human Navy no longer maintains presence here?"),
+                                function()
+                                    setCommsMessage(
+                                        _("The need to spread will cease. We will stop. In fact, this is a solution we wanted to propose. This is the only to stop " ..
+                                        "unnecessary bloodshed."))
+                                        playerKnowsAboutAlternative = true
+                                    addCommsReply(_("<back>"), hfFreighterComms_m1_6)
+                                end
+                            )
+                        end
+                    )
+                end
+            )
+            addCommsReply(
+                _("How is the plague spreading?"),
+                function() 
+                    setCommsMessage(
+                        _("It's not really a plague. More like a trojan, or a rootkit. We decided that the most efficient way to spread throughout this system is to " ..
+                        "utilize existing commercial and civilian traffic. "))
+                    addCommsReply(_("<back>"), hfFreighterComms_m1_6)
+                end
+            )
+            addCommsReply(
+                _("Why shouldn't we simply destroy you?"),
+                function() 
+                    setCommsMessage(
+                        _("You can try. These industrial stations have enough machinery and parts to manufacture a flotilla in an instant. In fact, we already have a couple " ..
+                        "vessels ready and waiting in dry docks. In addition to the captured ones, of course. And we know you are dealing with the Kraylor threat at " ..
+                        "the moment as well, leaving you weaker."))
+                    addCommsReply(_("<back>"), hfFreighterComms_m1_6)
+                end
+            )
+
+        end
+    )
+    foundSourceOfPlague = true
+end
+
+function hfFreighterComms_m1_7_end()
+    setCommsMessage(_("Welcome back, human. Thank you for getting rid of your military presence. We will stop the melding plague... for now."))
+    victory("Ghosts")
+end
