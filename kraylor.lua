@@ -211,15 +211,16 @@ function ambushUpdate(delta)
             kralienFiend:setWarpDrive(false)
         end
         if distance(hfFreighter.initialX, hfFreighter.initialY, hfFreighter) > 2000 then
-            local sent = kralienFiend:sendCommsMessage(
-                getPlayerShip(-1),
-                _("Human frigate!.. This captain Roghar Raughar, Kraylor vessel thlaQ'. Do not fire, we talk. I come to freighter.")
-            )
-            if sent then
-                ambushState = ambushStateAskCeaseFire
-                kralienFiendCommsMissionSpecific = kralienFiendComms_1
-                hfFreighterCommsMissionSpecific = hfFreighterComms_m1_3_a_1
-            end
+            registerRetryCallback(5, function()
+                return kralienFiend:sendCommsMessage(
+                    getPlayerShip(-1),
+                    _("Human frigate!.. This captain Roghar Raughar, Kraylor vessel thlaQ'. Do not fire, we talk. I come to freighter.")
+                )
+            end)
+
+            ambushState = ambushStateAskCeaseFire
+            kralienFiendCommsMissionSpecific = kralienFiendComms_1
+            hfFreighterCommsMissionSpecific = hfFreighterComms_m1_3_a_1
         end
     end
 
@@ -266,14 +267,15 @@ function ambushUpdate(delta)
                     kralienFiend.escorts[i]:orderFlyFormation(tgt, dx, dy)
 
                     if ambushState ~= ambushStateNegotiating then
-                        local sent = kralienFiend:sendCommsMessage(
-                            getPlayerShip(-1),
-                            _("Here Roghar raugharR' from thlaQ'. Friends are here. Talk now.")
-                        )
-                        if sent then
-                            ambushState = ambushStateNegotiating
-                            kralienFiendCommsMissionSpecific = kralienFiendComms_3
-                        end
+                        registerRetryCallback(5, function()
+                            return kralienFiend:sendCommsMessage(
+                                getPlayerShip(-1),
+                                _("Here Roghar raugharR' from thlaQ'. Friends are here. Talk now.")
+                            )
+                        end)
+            
+                        ambushState = ambushStateNegotiating
+                        kralienFiendCommsMissionSpecific = kralienFiendComms_3
                     end
                 end
             end
@@ -330,37 +332,32 @@ function ambushUpdate(delta)
             for i=1, #kralienFiend.escorts do
                 if kralienFiend.escorts[i]:isValid() then
                     if anyHailed == false then
-                        kralienFiend.escorts[i]:sendCommsMessage(
-                            getPlayerShip(-1),
-                            _(kralienFiend.escorts[i]:getCallSign() .. " to Kraylor in area. Boss is dead. I take command now. " ..
-                                "I order go back and drink wine! Damn these humies! Oops they hear this. Stupid radio.")
-                        )
+                        registerRetryCallback(5, function()
+                            return kralienFiend.escorts[i]:sendCommsMessage(
+                                getPlayerShip(-1),
+                                _(kralienFiend.escorts[i]:getCallSign() .. " to Kraylor in area. Boss is dead. I take command now. " ..
+                                    "I order go back and drink wine! Damn these humies! Oops they hear this. Stupid radio.")
+                            )
+                        end)                        
                         getPlayerShip(-1):addReputationPoints(50)
+                        break
                     end
                 end
             end
         end
 
-        kralienFiendCommsMissionSpecific = nil
-        ambushState = ambushStateBackToNormal
-        hfFreighter.hailAfter = getScenarioTime() + 15
-    end
-
-    if ambushState == ambushStateBackToNormal then
-        if hfFreighter.gotoMiners and getScenarioTime() > hfFreighter.hailAfter then
-            hfFreighter.hailAfter = getScenarioTime() + 5
-            hfFreighter:orderDock(minerHab)
-            local sent = hfFreighter:sendCommsMessage(
+        registerRetryCallback(5, function()
+            return hfFreighter:sendCommsMessage(
                 getPlayerShip(-1),
                 _("That was interesting. Anyhow... we can take it from here. You should go back now. Yes?")
             )
-            if sent then
-                hfFreighterCommsMissionSpecific = hfFreighterComms_m1_3_a
-                ambushState = ambushStateDone
-            end    
-        end
-    end
+        end)
+        hfFreighter:orderDock(minerHab)
 
+        kralienFiendCommsMissionSpecific = nil
+        ambushState = ambushStateDone
+    end
+    
 end
 
 local function kraylorFleetUpdate(delta, fleet)

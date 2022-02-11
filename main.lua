@@ -19,10 +19,13 @@ local function mission1_5_plagueQuarantineStart(delta)
     if not mission1_5_setup_done then
         mission1_5_setup_done = true
 
-        freeport9:sendCommsMessage(
-            getPlayerShip(-1),
-            _(getPlayerShip(-1):getCallSign() .. ", report to " .. freeport9:getCallSign() .. " Command HQ. We have an unusual situation on our hands.")
-        )
+        registerRetryCallback(5, function()
+            return freeport9:sendCommsMessage(
+                getPlayerShip(-1),
+                _(getPlayerShip(-1):getCallSign() .. ", report to " .. freeport9:getCallSign() .. " Command HQ. We have an unusual situation on our hands.")
+            )
+        end)
+
         freeport9CommsMissionSpecific = freeport9Comms_m1_5
         borderStationCommsMissionSpecific = borderStationComms_m1_5
     end
@@ -34,10 +37,12 @@ local function mission1_4_kraylorSkirmishes(delta)
     if not mission1_4_setup_done then
         activateKraylorAttacks()
 
-        freeport9:sendCommsMessage(
-            getPlayerShip(-1),
-            _(getPlayerShip(-1):getCallSign() .. ", report to " .. freeport9:getCallSign() .. " Command HQ, we've got another assignment for you.")
-        )
+        registerRetryCallback(5, function()
+            return freeport9:sendCommsMessage(
+                getPlayerShip(-1),
+                _(getPlayerShip(-1):getCallSign() .. ", report to " .. freeport9:getCallSign() .. " Command HQ, we've got another assignment for you.")
+            )
+        end)
 
         freeport9CommsMissionSpecific = freeport9Comms_m1_4
         minerHabCommsMissionSpecific = nil
@@ -46,7 +51,7 @@ local function mission1_4_kraylorSkirmishes(delta)
         mission1_4_setup_done = true
     end
 
-    if freeport9.plagueAlertLevel >= 3 then
+    if freeport9.plagueAlertLevel >= 5 then
         --- todo: comms and description for decontamination unit
         currentMission = mission1_5_plagueQuarantineStart
     end
@@ -81,7 +86,6 @@ local function mission1_3b_jump_carrier(delta)
 end
 
 
-
 local mission1_2_setup_done = false
 local function mission1_2_lookForSignal(delta)
 
@@ -106,11 +110,13 @@ local function mission1_1_prologue(delta)
 
     freeport9CommsMissionSpecific = freeport9Comms_m1_1
 
-    if getScenarioTime() >= 30 and stroke2.talked and stroke4.talked then
-        stroke1:sendCommsMessage(
-            getPlayerShip(-1),
-            _(getPlayerShip(-1):getCallSign() .. ", report to " .. freeport9:getCallSign() .. " Command HQ.")
-        )
+    if stroke2.talked and stroke4.talked then ---and  getScenarioTime() >= 30 then
+        registerRetryCallback(5, function()
+            return freeport9:sendCommsMessage(
+                getPlayerShip(-1),
+                _(getPlayerShip(-1):getCallSign() .. ", report to " .. freeport9:getCallSign() .. " Command HQ.")
+            )
+        end)
         currentMission = mission1_2_lookForSignal
     end
 
@@ -131,19 +137,18 @@ function myInit()
                              
   
 
-    currentMission = mission1_5_plagueQuarantineStart
+    currentMission = mission1_2_lookForSignal
 
 
     player = PlayerSpaceship():setFaction("Human Navy"):setTemplate("Phobos M3P"):setCallSign("Stroke 3"):setWarpDrive(true)
     player:setPosition(0, 0):setHeading(270)
+    player:setReputationPoints(20)
 
     player.nearExitWormhole = false
     player.nearMapBoundary = false
 
     player.paidDockingFees = false
     player.hasOnShorePermit = false
-
-    player:setReputationPoints(1000)
     
 
     freeport9 = SpaceStation():setTemplate("Medium Station"):setFaction("Human Navy"):setCallSign("Freeport 9"):setPosition(2000, 2000):setHeading(270):setCommsFunction(freeport9Comms)
@@ -280,4 +285,6 @@ function myUpdate(delta)
     ghostsPlagueUpdate(delta)
 
     borderStationUpdate(delta)
+
+    updateCallbacks(delta)
 end

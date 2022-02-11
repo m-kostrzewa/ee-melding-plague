@@ -232,7 +232,7 @@ function freeport9Comms_m1_4()
                 _("<give sitrep report>. What should we do, commander?"),
                 function()
                     setCommsMessage(_("Your report is very concerning. It seems to confirm our intelligence reports about increased Kraylor activity in this system. " ..
-                        "You are to conduct combat patrol along main trade routes between " .. southExitWh:getCallSign() .. " and " .. northExitWh():getCallSign() .. " wormholes. " .. 
+                        "You are to conduct combat patrol along main trade routes between " .. southExitWh:getCallSign() .. " and " .. northExitWh:getCallSign() .. " wormholes. " .. 
                         "Destroy any encountered hostile Kraylor forces. Piracy won't be tolerated. We will reach out to you once we have more intel. "))
                 end
             )

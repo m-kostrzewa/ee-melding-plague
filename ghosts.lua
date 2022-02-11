@@ -1,9 +1,9 @@
 require("./69_freeport9_mayhem/globals.lua")
 
+originalInfector = {}
 
 function initializeGhosts()
-    hfFreighter.infected = true
-    minerHab.infected = true
+    hfFreighter.infectedBy = originalInfector -- dummy, not nil value
 end
 
 function hfFreighterSosBlinking(delta)
@@ -24,43 +24,120 @@ function ghostsPlagueUpdate(delta)
     for i=1, #allStationsRefs do
         local station = allStationsRefs[i]
 
-        if station["hasDecontaminationUnit"] == nil then
-            station.hasDecontaminationUnit = false
-        end
-
-        if station:isValid() and not station.hasDecontaminationUnit then
+        if station:isValid() then
             local oir = station:getObjectsInRange(4000)
             for j=1, #oir do
                 local object = oir[j]
                 if object:isValid() and object.typeName == "CpuShip" then
                     --- there alternative ways of initializing these fields but are more messy (since we'd need to add ghosts logic
                     --- to unrelated parts of the codebase)
-                    if object["infected"] == nil then
-                        object.infected = false
+                    if object["infectedBy"] == nil then
+                        object.infectedBy = nil
                     end
-                    if station["infected"] == nil then
-                        station.infected = false
+                    if station["infectedBy"] == nil then
+                        station.infectedBy = nil
                     end
 
                     if object:isDocked(station) then
-                        if station.infected and not object.infected then
+                        if station.infectedBy ~= nil and station.infectedBy ~= object and object.infectedBy == nil then
                             print("[Ghosts] station " .. station:getCallSign() .. " infected freighter " .. object:getCallSign())
-                            object.infected = true
-                        elseif object.infected and not station.infected then
+                            object.infectedBy = station
+                        elseif object.infectedBy ~= nil and object.infectedBy ~= station and station.infectedBy == nil then
                             print("[Ghosts] freighter " .. object:getCallSign() .. " infected station " .. station:getCallSign())
-                            station.infected = true
+                            station.infectedBy = object
+                            object.infectedBy = station
                             if station == freeport9 then
                                 freeport9.plagueAlertLevel = freeport9.plagueAlertLevel + 1
+                            end
+                        elseif object.infectedBy ~= nil and object.infectedBy ~= station and station.infectedBy ~= nil and station.infectedBy ~= object then
+
+                            --- Human stations can still infect, but can't meld or trigger melding.
+                            if station:getFaction() == "Human Navy" then
+                                return
+                            end
+
+                            -- both infected -> both become Ghosts after a delay
+                            if object["isMelding"] == nil then
+                                print("[Ghosts] freighter " .. object:getCallSign() .. " starting to meld because of " .. station:getCallSign())
+                                registerAtSecondsCallback(getScenarioTime() + irandom(90, 120), function(id)
+                                    print("[Ghosts] " .. object:getCallSign() .. " is taken over by the melding plague!")
+                                    object:setFaction("Ghosts"):orderDefendTarget(minerHab)
+                                    if object["escorts"] ~= nil then
+                                        for i=1, #object.escorts do
+                                            object.escorts[i]:setFaction("Ghosts"):orderDefendTarget(minerHab)
+                                        end
+                                    end
+
+                                    if distance(object, getPlayerShip(-1)) < 20000 then
+                                        local rand = irandom(1, 3)
+                                        if rand == 1 then
+                                            object:sendCommsMessage(
+                                                getPlayerShip(-1),
+                                                _("Mayday mayday! This is " .. object:getCallSign() .. " to everyone in the area! Something's come onboard. " ..
+                                                    "It's killing us! Help us, help us!!")
+                                            )
+                                        elseif rand == 2 then
+                                            object:sendCommsMessage(
+                                                getPlayerShip(-1),
+                                                _(object:getCallSign() .. " to anyone listening! Do not come close to " .. object.infectedBy:getCallSign() .. ", please! " ..
+                                                    "I beg you!...")
+                                            )
+                                        elseif rand == 3 then
+                                            object:sendCommsMessage(
+                                                getPlayerShip(-1),
+                                                _("Mayday! Lost mainframe access. Lost rudder control. Lost life support. Lost...")
+                                            )
+                                        end
+                                    end
+
+                                    freeport9.plagueAlertLevel = freeport9.plagueAlertLevel + 1
+                                    unregisterAtSecondsCallback(id)
+                                end)
+                                object.isMelding = true
+                            end
+                            if station["isMelding"] == nil then
+                                print("[Ghosts] station " .. station:getCallSign() .. " starting to meld because of " .. station:getCallSign())
+                                registerAtSecondsCallback(getScenarioTime() + irandom(120, 150), function(id)
+                                    print("[Ghosts] " .. object:getCallSign() .. " is taken over by the melding plague!")
+                                    station:setFaction("Ghosts")
+
+                                    if distance(station, getPlayerShip(-1)) < 40000 then
+                                        local rand = irandom(1, 3)
+                                        if rand == 1 then
+                                            station:sendCommsMessage(
+                                                getPlayerShip(-1),
+                                                _("Something's... loose in the upper decks, we need immediate evac! *shouts in the background* Do not come here! STAY AW..")
+                                            )
+                                        elseif rand == 2 then
+                                            station:sendCommsMessage(
+                                                getPlayerShip(-1),
+                                                _("Get us out of here! Get us out of here! Get us-")
+                                            )
+                                        elseif rand == 3 then
+                                            station:sendCommsMessage(
+                                                getPlayerShip(-1),
+                                                _("<This is an automated message. Biohazard levels critical. \nCommencing decontamination... Failed.\n" ..
+                                                    "Powering automated defense systems... Failed\nVenting lower decks... Failed.\nVenting upper decks... Failed.\n" ..
+                                                    "Initiating self-destruct sequence... Failed\n" ..
+                                                    "This is an automated message. Biohazard levels critical. \nCommencing decontamination... Failed.\n...>")
+                                            )
+                                        end
+                                    end
+
+                                    freeport9.plagueAlertLevel = freeport9.plagueAlertLevel + 1
+                                    unregisterAtSecondsCallback(id)
+                                end)
+                                station.isMelding = true
                             end
                         end
                     end
                 end
 
-                if object:isValid() and object.typeName == "PlayerShip" then
-                    if object:isDocked(station) then
-                        print("[Ghosts] station " .. station:getCallSign() .. " infected PLAYER SHIP " .. object:getCallSign())
-                    end
-                end
+                -- if object:isValid() and object.typeName == "PlayerShip" then
+                --     if object:isDocked(station) then
+                --         print("[Ghosts] station " .. station:getCallSign() .. " infected PLAYER SHIP " .. object:getCallSign())
+                --     end
+                -- end
             end
         end
     end

@@ -21,11 +21,13 @@ function borderStationUpdate(delta)
             if not ps.paidDockingFees or not ps.hasOnShorePermit then
                 ps:commandUndock()
                 
-                borderStation:sendCommsMessage(
-                    getPlayerShip(-1),
-                    _(getPlayerShip(-1):getCallSign() .. ", docking request denied. Reason: lack of on-shore permit and/or docking fees unpaid. " ..
-                        "Contact the station for more information.")
-                )
+                registerRetryCallback(5, function()
+                    return borderStation:sendCommsMessage(
+                        getPlayerShip(-1),
+                        _(getPlayerShip(-1):getCallSign() .. ", docking request denied. Reason: lack of on-shore permit and/or docking fees unpaid. " ..
+                            "Contact the station for more information.")
+                    )
+                end)
             else 
                 dockingState = dockingStateAllowed
             end
@@ -254,8 +256,8 @@ function borderStationComms_m1_5()
                         --- todo: comms and description for decontamination unit
                         borderStation.hasDecontaminationUnit = true
                         borderStationQuarantine = true
-                        setCommsMessage(_("Thank you, I'll get to work immediately. A quarantine zone will be setup in the docking bay and compulsory testing will be " ..
-                            "conducted on anyone wanting to reach Human Worlds. Obviously, infected crews will be ordered to turn around. We still don't know the " ..
+                        setCommsMessage(_("Thank you, I'll get to work immediately. A quarantine zone will be setup in the docking bay. " ..
+                            "Also, we have orders from HQ to deny access to the wormhole to all non-Human ships. We still don't know the " ..
                             "nature of the disease. I recommend you refrain from docking to non-Human controlled stations, as only those have decontamination units " ..
                             "to stop the spread, at least for now. That makes it this station and " .. freeport9:getCallSign() .. "."))
                     end

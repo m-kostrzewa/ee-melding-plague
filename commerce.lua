@@ -64,7 +64,7 @@ local function randomCommerceFreighterShipCommsFunc()
                 duringCombatComms()
             elseif comms_target.turnedAround then
                 setCommsMessage(_(
-                    "Damn quarantine. They're forcing everyone infected to go back to Independent Worlds. But I don't feel sick at all! " ..
+                    "Damn quarantine. They're forcing everyone to go back to Independent Worlds. But I don't feel sick at all! " ..
                     "And why do they let Humans through?.."))
                 addCommsReply(
                     _("Request detailed itinerary."),
@@ -87,7 +87,7 @@ local function randomCommerceFreighterShipCommsFunc()
                 duringCombatComms()
             elseif comms_target.turnedAround then
                 setCommsMessage(_(
-                    "Humans are a joke. They're letting infected humans past the quarantine zone, but turning around everyone else."))
+                    "Humans are a joke. They're letting other humans past the quarantine zone, but turning around everyone else."))
                 addCommsReply(
                     _("Request detailed itinerary."),
                     requestDetailedItineraryComms
@@ -189,7 +189,8 @@ local function newDestination(alreadyVisited, thisLeg, ultimateDest)
                 table.insert(possibleDestinations, {weight = 10, tgt = habs[i]})
             end
         end
-        table.insert(possibleDestinations, {weight = 60, tgt = freeport9})
+        table.insert(possibleDestinations, {weight = 30, tgt = freeport9})
+        table.insert(possibleDestinations, {weight = 20, tgt = minerHab}) --- just to increase chance of npcs going here.
     end
 
     for i=1, #alreadyVisited do
@@ -434,6 +435,14 @@ local function updateCommerceFleet(delta, freighter)
     if freighter.state == stateBeginNewLeg then
         if dest.typeName == "SpaceStation" then
             print("[Commerce] " .. freighter:getCallSign() .. " beginning new leg to " .. dest:getCallSign())
+
+            if not dest:isFriendly(dest) then
+                print("[Commerce] " .. freighter:getCallSign() .. " station is not friendly, skipping it")
+                freighter.state = stateBeginNewLeg
+                freighter.currentLeg = freighter.currentLeg + 1
+                return        
+            end
+
             freighter:orderDock(dest)
             freighter.state = stateDuringTransit
 

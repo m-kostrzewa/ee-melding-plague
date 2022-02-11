@@ -49,9 +49,12 @@ ambushStateCeaseFire = 2
 ambushStateAllOutAttack = 3
 ambushStateDuel = 4
 ambushStateResolved = 5
-ambushStateBackToNormal = 6
 ambushStateDone = 7
 
+
+--- callbacks
+lastCallbackId = 0
+callbacks = {}
 
 function isShipPerfectlyFine(ship) 
     if not ship:isValid() then
@@ -67,4 +70,40 @@ function isShipPerfectlyFine(ship)
         end
     end
     return true
+end
+
+function registerAtSecondsCallback(atSeconds, func)
+    lastCallbackId = lastCallbackId + 1
+
+    local cb = {atSeconds = atSeconds, func = func}
+    callbacks[lastCallbackId] = cb
+
+    print("[Callback] Registering id=" .. lastCallbackId .. " atSeconds=" .. atSeconds)
+    return lastCallbackId
+end
+
+function unregisterAtSecondsCallback(id)
+    print("[Callback] Unregistering " .. id)
+    callbacks[id] = nil
+end
+
+function registerRetryCallback(interval, func)
+    local actualFunc = function(id)
+        local ret = func(id)
+        if not ret then
+            local retryAt = interval
+            registerRetryCallback(interval, func)
+        end
+        unregisterAtSecondsCallback(id)
+    end
+    registerAtSecondsCallback(getScenarioTime() + interval, actualFunc)
+end
+
+function updateCallbacks(delta)
+    local currentSeconds = getScenarioTime()
+    for id=1, lastCallbackId do
+        if callbacks[id] ~= nil and currentSeconds >= callbacks[id].atSeconds then
+            callbacks[id].func(id)
+        end
+    end
 end
