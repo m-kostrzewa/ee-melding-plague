@@ -241,7 +241,8 @@ _____ _           ___  ___     _     _ _                     _
     player.hasOnShorePermit = false
     
 
-    freeport9 = SpaceStation():setTemplate("Large Station"):setFaction("Human Navy"):setCallSign("Freeport 9"):setPosition(2000, 2000):setHeading(270):setCommsFunction(freeport9Comms)
+    freeport9 = SpaceStation():setTemplate("Large Station"):setFaction("Human Navy"):setCallSign("Freeport 9"):setPosition(2000, 2000):
+        setHeading(270):setCommsFunction(freeport9Comms)
     local freeport9X, freeport9Y = freeport9:getPosition()
     freeport9.plagueAlertLevel = 0
     freeport9["Homing"] = 12
@@ -252,34 +253,22 @@ _____ _           ___  ___     _     _ _                     _
     freeport9["Probe"] = 15
 
 
-    stroke1 = CpuShip():setFaction("Human Navy"):setTemplate("Phobos M3"):setCallSign("Stroke 1"):setScanned(true):setPosition(-1000, 0):setHeading(270):setCommsFunction(stroke1Comms):orderDefendTarget(freeport9):setWarpDrive(true)
+    stroke1 = CpuShip():setFaction("Human Navy"):setTemplate("Phobos M3"):setCallSign("Stroke 1"):setScanned(true):setPosition(-1000, 0):
+        setHeading(270):setCommsFunction(stroke1Comms):orderDefendTarget(freeport9):setWarpDrive(true)
     stroke1:setImpulseMaxSpeed(stroke1:getImpulseMaxSpeed() * 0.9) --- so that escorts can catch up
     stroke1.talked = false
     stroke1.likesPlayer = false
 
-    stroke2 = CpuShip():setFaction("Human Navy"):setTemplate("Phobos M3"):setCallSign("Stroke 2"):setScanned(true):setPosition(-500, -500):setHeading(270):setCommsFunction(stroke2Comms):orderFlyFormation(stroke1, -500, 500):setWarpDrive(true)
+    stroke2 = CpuShip():setFaction("Human Navy"):setTemplate("Phobos M3"):setCallSign("Stroke 2"):setScanned(true):setPosition(-500, -500):
+        setHeading(270):setCommsFunction(stroke2Comms):orderFlyFormation(stroke1, -500, 500):setWarpDrive(true)
     stroke2.talked = false
     stroke2.likesPlayer = false
 
-    stroke4 = CpuShip():setFaction("Human Navy"):setTemplate("Phobos M3"):setCallSign("Stroke 4"):setScanned(true):setPosition(-500, 500):setHeading(270):setCommsFunction(stroke4Comms):orderFlyFormation(stroke1, -500, -500):setWarpDrive(true)
+    stroke4 = CpuShip():setFaction("Human Navy"):setTemplate("Phobos M3"):setCallSign("Stroke 4"):setScanned(true):setPosition(-500, 500):
+        setHeading(270):setCommsFunction(stroke4Comms):orderFlyFormation(stroke1, -500, -500):setWarpDrive(true)
     stroke4.talked = false
     stroke4.likesPlayer = false
 
-
-    bobsStation = SpaceStation():setTemplate("Small Station"):setFaction("Independent"):setCallSign("Bob's Mega Diner"):setPosition(144785, -93706):setCommsFunction(bobsStationComms)
-    borderStation = SpaceStation():setTemplate("Medium Station"):setFaction("Human Navy"):setCallSign("Customs"):setPosition(-81260, 140904):setCommsFunction(borderStationComms)
-
-    CpuShip():setFaction("Human Navy"):setTemplate("Weapons platform"):setCallSign("BDF88"):setPosition(-80703, 141433):orderRoaming():setCommsFunction(randomizedBdfCommsFunc()):setScanned(true)
-
-    local bdf01 = CpuShip():setFaction("Human Navy"):setTemplate("Dreadnought"):setCallSign("BDF01"):setPosition(-80487, 140147):orderDefendLocation(-80587, 140025):setCommsFunction(randomizedBdfCommsFunc()):setScanned(true)
-    CpuShip():setFaction("Human Navy"):setTemplate("MU52 Hornet"):setCallSign("BDF13"):setPosition(-81986, 142951):orderDefendTarget(bdf01):setCommsFunction(randomizedBdfCommsFunc()):setScanned(true)
-    CpuShip():setFaction("Human Navy"):setTemplate("MU52 Hornet"):setCallSign("BDF14"):setPosition(-81014, 142838):orderDefendTarget(bdf01):setCommsFunction(randomizedBdfCommsFunc()):setScanned(true)
-
-    hfFreighter = CpuShip():setFaction("Independent"):setTemplate("Garbage Freighter 3"):setCallSign("HF2137"):setPosition(157226, 97278):orderIdle():setCommsFunction(hfFreighterComms)
-    hfFreighter.sosBlinkingEnabled = true
-    hfFreighter.spottedFriends = false
-    hfFreighter.initialX, hfFreighter.initialY = hfFreighter:getPosition()
-    hfFreighter:setRadarSignatureInfo(hfFreighter:getRadarSignatureGravity(), 1.0, 0.0)
 
     --- todo: anomalous description
     --- todo comms of infected stations and ships
@@ -314,6 +303,8 @@ _____ _           ___  ___     _     _ _                     _
     combNebulas()
 
     rememberAllStations()
+
+    createAsteroids()
 end
 
 

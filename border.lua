@@ -7,6 +7,35 @@ local dockingStateNotAllowed = 2
 function borderStationInit() 
     dockingState = dockingStateNotAllowed
     borderStationQuarantine = false
+
+    borderStation = SpaceStation():setTemplate("Medium Station"):setFaction("Human Navy"):setCallSign("Customs"):
+        setPosition(-81260, 140904):setCommsFunction(borderStationComms)
+
+    CpuShip():setFaction("Human Navy"):setTemplate("Weapons platform"):setCallSign("BDF88"):setPosition(-80703, 141433):
+        orderRoaming():setCommsFunction(randomizedBdfCommsFunc()):setScanned(true)
+
+    local bdf01 = CpuShip():setFaction("Human Navy"):setTemplate("Dreadnought"):setCallSign("BDF01"):setPosition(-80487, 140147):
+        orderDefendLocation(-80587, 140025):setCommsFunction(randomizedBdfCommsFunc()):setScanned(true)
+    CpuShip():setFaction("Human Navy"):setTemplate("MU52 Hornet"):setCallSign("BDF13"):setPosition(-81986, 142951):
+        orderDefendTarget(bdf01):setCommsFunction(randomizedBdfCommsFunc()):setScanned(true)
+    CpuShip():setFaction("Human Navy"):setTemplate("MU52 Hornet"):setCallSign("BDF14"):setPosition(-81014, 142838):
+        orderDefendTarget(bdf01):setCommsFunction(randomizedBdfCommsFunc()):setScanned(true)
+    CpuShip():setFaction("Human Navy"):setTemplate("MU52 Hornet"):setCallSign("BDF15"):setPosition(-81014, 142838):
+        orderDefendTarget(bdf01):setCommsFunction(randomizedBdfCommsFunc()):setScanned(true)
+    CpuShip():setFaction("Human Navy"):setTemplate("MU52 Hornet"):setCallSign("BDF16"):setPosition(-81014, 142838):
+        orderDefendTarget(bdf01):setCommsFunction(randomizedBdfCommsFunc()):setScanned(true)
+    CpuShip():setFaction("Human Navy"):setTemplate("MU52 Hornet"):setCallSign("BDF17"):setPosition(-81014, 142838):
+        orderDefendTarget(bdf01):setCommsFunction(randomizedBdfCommsFunc()):setScanned(true)
+    CpuShip():setFaction("Human Navy"):setTemplate("MU52 Hornet"):setCallSign("BDF18"):setPosition(-81014, 142838):
+        orderDefendTarget(bdf01):setCommsFunction(randomizedBdfCommsFunc()):setScanned(true)
+
+    local bdf55 = CpuShip():setFaction("Human Navy"):setTemplate("Phobos M3"):setCallSign("BDF51"):setScanned(true):
+        setPosition(-82288, 138520):setHeading(270):setCommsFunction(randomizedBdfCommsFunc()):orderDefendLocation(-80587, 140025)
+    bdf55:setImpulseMaxSpeed(bdf55:getImpulseMaxSpeed() * 0.9)
+    CpuShip():setFaction("Human Navy"):setTemplate("Phobos M3"):setCallSign("BDF52"):setScanned(true):
+        setPosition(-82288, 138520):setHeading(270):setCommsFunction(randomizedBdfCommsFunc()):orderFlyFormation(bdf55, -500, 500)
+    CpuShip():setFaction("Human Navy"):setTemplate("Phobos M3"):setCallSign("BDF53"):setScanned(true):
+        setPosition(-82288, 138520):setHeading(270):setCommsFunction(randomizedBdfCommsFunc()):orderFlyFormation(bdf55, -500, -500)
 end
 
 function borderStationUpdate(delta) 

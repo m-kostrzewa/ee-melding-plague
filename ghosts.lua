@@ -4,7 +4,14 @@ originalInfector = {}
 lastGhostIdx = 0
 
 function initializeGhosts()
+
+
+    hfFreighter = CpuShip():setFaction("Independent"):setTemplate("Garbage Freighter 3"):setCallSign("HF2137"):setPosition(157226, 97278):orderIdle():setCommsFunction(hfFreighterComms)
+    hfFreighter.sosBlinkingEnabled = true
+    hfFreighter.spottedFriends = false
+    hfFreighter.initialX, hfFreighter.initialY = hfFreighter:getPosition()
     hfFreighter.infectedBy = originalInfector -- dummy, not nil value
+    hfFreighter:setRadarSignatureInfo(hfFreighter:getRadarSignatureGravity(), 1.0, 0.0)
 end
 
 function hfFreighterSosBlinking(delta)
