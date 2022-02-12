@@ -1,6 +1,7 @@
 require("./69_freeport9_mayhem/globals.lua")
 
 originalInfector = {}
+lastGhostIdx = 0
 
 function initializeGhosts()
     hfFreighter.infectedBy = originalInfector -- dummy, not nil value
@@ -149,6 +150,46 @@ function ghostsPlagueUpdate(delta)
                 --     end
                 -- end
             end
+        end
+    end
+end
+
+function ghostDefensiveFleetUpdate(delta)
+    for i=1, #allStationsRefs do
+        local station = allStationsRefs[i]
+
+        if station["spawnedGhosts"] == nil then
+            station["spawnedGhosts"] = false
+        end
+
+        if station:isValid() and station:getFaction() == "Ghosts" and not isShipPerfectlyFine(station)and not station.spawnedGhosts then
+
+            local fleetType = irandom(1, 3)
+            if fleetType == 1 then
+                shipType = "MU52 Hornet"
+                shipCount = irandom(8, 12)
+            elseif fleetType == 2 then
+                shipType = "Adder MK5"
+                shipCount = irandom(5, 10)
+            else
+                shipType = "Dreadnought"
+                shipCount = irandom(1, 1)
+            end
+    
+            local sx, sy = station:getPosition()
+            local angleSeparation = 360 / shipCount
+            for i = 1, shipCount do
+                local dx, dy = vectorFromAngle(i * angleSeparation, 1000)
+                ship = CpuShip():setFaction("Ghosts"):setTemplate(shipType):setCallSign(string.format("Node 0x%X", lastGhostIdx))
+                lastGhostIdx = lastGhostIdx + 1
+                ship:setPosition(sx + dx, sy + dy)
+
+                ship:orderDefendTarget(station)
+
+                ElectricExplosionEffect():setPosition(sx + dx, sy + dy):setSize(300):setOnRadar(true)
+            end
+
+            station.spawnedGhosts = true
         end
     end
 end

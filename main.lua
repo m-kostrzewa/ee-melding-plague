@@ -77,8 +77,6 @@ local function mission1_7_finalChoice(delta)
     end
 end
 
---- todo spawn defensive ghost fleets on damage
-
 local mission1_6_setup_done = false
 local function mission1_6_plagueDoctor(delta)
     if not mission1_6_setup_done then
@@ -374,4 +372,6 @@ function myUpdate(delta)
     updateCallbacks(delta)
 
     updateAnomalousReadings(delta)
+
+    ghostDefensiveFleetUpdate(delta)
 end
