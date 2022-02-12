@@ -144,7 +144,6 @@ local function mission1_4_kraylorSkirmishes(delta)
     end
 
     if freeport9.plagueAlertLevel >= 5 then
-        --- todo: comms and description for decontamination unit
         currentMission = mission1_5_plagueQuarantineStart
     end
 end
@@ -167,13 +166,12 @@ local function mission1_3a_goto_miners(delta)
     end
 end
 
-local mission1_3b_setup_done = false
-local function mission1_3b_jump_carrier(delta)
-    if not mission1_3b_setup_done then
-        mission1_3b_setup_done = true
-        --- todo
-    end
-end
+-- local mission1_3b_setup_done = false
+-- local function mission1_3b_jump_carrier(delta)
+--     if not mission1_3b_setup_done then
+--         mission1_3b_setup_done = true
+--     end
+-- end
 
 
 local mission1_2_setup_done = false
@@ -206,7 +204,7 @@ local function mission1_1_prologue(delta)
         stroke4CommsMissionSpecific = stroke4Comms_m1_1
     end
 
-    if stroke1.talked and stroke2.talked and stroke4.talked then ---and  getScenarioTime() >= 30 then
+    if stroke1.talked and stroke2.talked and stroke4.talked then
         registerRetryCallback(5, function()
             return freeport9:sendCommsMessage(
                 getPlayerShip(-1),
@@ -230,11 +228,7 @@ function myInit()
                    |_|                                          |___/       by Kosai
   ]])
 
-                             
-  
-
     currentMission = mission1_1_prologue
-
 
     player = PlayerSpaceship():setFaction("Human Navy"):setTemplate("Phobos M3P"):setCallSign("Stroke 3"):setWarpDrive(true)
     player:setPosition(0, 0):setHeading(270)
@@ -247,9 +241,16 @@ function myInit()
     player.hasOnShorePermit = false
     
 
-    freeport9 = SpaceStation():setTemplate("Medium Station"):setFaction("Human Navy"):setCallSign("Freeport 9"):setPosition(2000, 2000):setHeading(270):setCommsFunction(freeport9Comms)
+    freeport9 = SpaceStation():setTemplate("Large Station"):setFaction("Human Navy"):setCallSign("Freeport 9"):setPosition(2000, 2000):setHeading(270):setCommsFunction(freeport9Comms)
     local freeport9X, freeport9Y = freeport9:getPosition()
     freeport9.plagueAlertLevel = 0
+    freeport9["Homing"] = 12
+    freeport9["Nuke"] = 1
+    freeport9["Mine"] = 3
+    freeport9["EMP"] = 2
+    freeport9["HVLI"] = 29
+    freeport9["Probe"] = 15
+
 
     stroke1 = CpuShip():setFaction("Human Navy"):setTemplate("Phobos M3"):setCallSign("Stroke 1"):setScanned(true):setPosition(-1000, 0):setHeading(270):setCommsFunction(stroke1Comms):orderDefendTarget(freeport9):setWarpDrive(true)
     stroke1:setImpulseMaxSpeed(stroke1:getImpulseMaxSpeed() * 0.9) --- so that escorts can catch up
@@ -265,10 +266,8 @@ function myInit()
     stroke4.likesPlayer = false
 
 
-    --- todo: station comms
-    bobsStation = SpaceStation():setTemplate("Small Station"):setFaction("Independent"):setCallSign("Bob's Mega Diner"):setPosition(144785, -93706)
-
-    borderStation = SpaceStation():setTemplate("Small Station"):setFaction("Human Navy"):setCallSign("Customs"):setPosition(-81260, 140904):setCommsFunction(borderStationComms)
+    bobsStation = SpaceStation():setTemplate("Small Station"):setFaction("Independent"):setCallSign("Bob's Mega Diner"):setPosition(144785, -93706):setCommsFunction(bobsStationComms)
+    borderStation = SpaceStation():setTemplate("Medium Station"):setFaction("Human Navy"):setCallSign("Customs"):setPosition(-81260, 140904):setCommsFunction(borderStationComms)
 
     CpuShip():setFaction("Human Navy"):setTemplate("Weapons platform"):setCallSign("BDF88"):setPosition(-80703, 141433):orderRoaming():setCommsFunction(randomizedBdfCommsFunc()):setScanned(true)
 
@@ -276,19 +275,18 @@ function myInit()
     CpuShip():setFaction("Human Navy"):setTemplate("MU52 Hornet"):setCallSign("BDF13"):setPosition(-81986, 142951):orderDefendTarget(bdf01):setCommsFunction(randomizedBdfCommsFunc()):setScanned(true)
     CpuShip():setFaction("Human Navy"):setTemplate("MU52 Hornet"):setCallSign("BDF14"):setPosition(-81014, 142838):orderDefendTarget(bdf01):setCommsFunction(randomizedBdfCommsFunc()):setScanned(true)
 
-    --- todo: anomalous description and changing science readings.
     hfFreighter = CpuShip():setFaction("Independent"):setTemplate("Garbage Freighter 3"):setCallSign("HF2137"):setPosition(157226, 97278):orderIdle():setCommsFunction(hfFreighterComms)
     hfFreighter.sosBlinkingEnabled = true
     hfFreighter.spottedFriends = false
     hfFreighter.initialX, hfFreighter.initialY = hfFreighter:getPosition()
     hfFreighter:setRadarSignatureInfo(hfFreighter:getRadarSignatureGravity(), 1.0, 0.0)
 
+    --- todo: anomalous description
     --- todo comms of infected stations and ships
 
     --- jump cruiser picks up hfFreighter
     -- jumpC = CpuShip():setFaction("Independent"):setTemplate("Jump Carrier"):setCallSign("JC"):setPosition(146708, 142000)
     -- hfFreighter:orderDock(jumpC)
-
 
     --- todo(visual): add ElectricExplosionEffect to some nebulas
     --- todo(visual): add asteroids and visualasteroids whatever they are
@@ -374,4 +372,6 @@ function myUpdate(delta)
     borderStationUpdate(delta)
 
     updateCallbacks(delta)
+
+    updateAnomalousReadings(delta)
 end

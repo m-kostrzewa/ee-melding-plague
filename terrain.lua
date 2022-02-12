@@ -75,24 +75,24 @@ function combNebulas()
 end
 
 function initializeMinerHabs()
-    minerHab = SpaceStation():setTemplate("Small Station"):setFaction("Independent"):setCallSign("Gas Refinery East"):setPosition(138263, 64230):setRotation(random(0, 360)):setCommsFunction(minerHabComms)
+    minerHab = SpaceStation():setTemplate("Huge Station"):setFaction("Independent"):setCallSign("Gas Refinery East"):setPosition(138263, 64230):setRotation(random(0, 360)):setCommsFunction(minerHabComms)
     minerHab.isEast = true
 
     local habsToCreate = {
-        {name = "Miner's Habitat \'Delta\'", x = 37103, y = 53079, isEast = true}, 
-        {name = "NatGas Auction house", x = 108774, y = 31594, isEast = true}, 
-        {name = "Zeta QA Labs", x = 86763, y = 88371, isEast = true}, 
-        {name = "CO2 Exchange", x = 25155, y = 15336, isEast = true}, 
-        {name = "Lambda Smokestack", x = 68931, y = 120334, isEast = true}, 
-        {name = "Tau Fuel Enrichment", x = -34602, y = -11028, isEast = false}, 
-        {name = "Miner's Barracks \'Omega\'", x = -85699, y = -5821, isEast = false}, 
-        {name = "Gas Refinery West", x = -139992, y = -8345, isEast = false}, 
+        {name = "Miner's Habitat \'Delta\'", x = 37103, y = 53079, isEast = true, type = "Small Station"}, 
+        {name = "NatGas Auction house", x = 108774, y = 31594, isEast = true, type = "Small Station"}, 
+        {name = "Zeta QA Labs", x = 86763, y = 88371, isEast = true, type = "Small Station"}, 
+        {name = "CO2 Exchange", x = 25155, y = 15336, isEast = true, type = "Large Station"}, 
+        {name = "Lambda Smokestack", x = 68931, y = 120334, isEast = true, type = "Medium Station"}, 
+        {name = "Tau Fuel Enrichment", x = -34602, y = -11028, isEast = false, type = "Small Station"}, 
+        {name = "Miner's Barracks \'Omega\'", x = -85699, y = -5821, isEast = false, type = "Small Station"}, 
+        {name = "Gas Refinery West", x = -139992, y = -8345, isEast = false, type = "Huge Station"}, 
     }
     for i=1, #habsToCreate do
         local entry = habsToCreate[i] 
         print("[Terrain] Spawning ", entry.name)
 
-        local aHab = SpaceStation():setTemplate("Small Station"):setFaction("Independent"):setCallSign(entry.name):setPosition(entry.x, entry.y):setRotation(random(0, 360)):setCommsFunction(randomizedHabCommsFunc())
+        local aHab = SpaceStation():setTemplate(entry.type):setFaction("Independent"):setCallSign(entry.name):setPosition(entry.x, entry.y):setRotation(random(0, 360)):setCommsFunction(randomizedHabCommsFunc())
         aHab.isEast = entry.isEast
         table.insert(habs, aHab)
     end

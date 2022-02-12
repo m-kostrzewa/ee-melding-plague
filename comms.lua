@@ -121,7 +121,8 @@ function stroke4Comms_m1_1()
         addCommsReply(
             _("Status?"),
             function()
-                setCommsMessage(_("All systems green... except our squadron wasn't relieved for weeks. It's like the Command forgot about us here."))
+                setCommsMessage(_("All systems green... except our squadron wasn't relieved for weeks. And we're running short on ordnance. " ..
+                    "It's like the Command forgot about us here."))
                 addCommsReply(
                     _("Captured outposts are never high on priority list."),
                     function()
@@ -227,6 +228,57 @@ end
 
 function freeport9Comms()
     freeport9CommsMissionSpecific()
+    freeport9CommsArmory()
+end
+
+function freeport9CommsArmory()
+    addCommsReply(
+        _("Patch me through to the Armory."),
+        function()
+            setCommsMessage(_("Due to equipment shortage we currently have the following ordnance remaining in stock:\n" ..
+                "* Homing missiles: " .. freeport9["Homing"] .. "\n" ..
+                "* Nukes: " .. freeport9["Nuke"] .. "\n" ..
+                "* Mines: " .. freeport9["Mine"] .. "\n" ..
+                "* EMPs: " .. freeport9["EMP"] .. "\n" ..
+                "* HVLIs: " .. freeport9["HVLI"] .. "\n" ..
+                "* Probes: " .. freeport9["Probe"]
+            ))
+            if comms_source:isDocked(comms_target) then
+                addCommsReply(
+                    _("Request ordnance top-up."),
+                    function()
+                        deduct = function(type)
+                            local storageCap = comms_source:getWeaponStorageMax(type)
+                            local current = comms_source:getWeaponStorage(type)
+                            local wantToProcure = storageCap - current
+                            local ableToProcure = math.min(freeport9[type], wantToProcure)
+                            comms_source:setWeaponStorage(type, current + ableToProcure)
+                            freeport9[type] = freeport9[type] - ableToProcure
+                        end
+                        deduct("Homing")
+                        deduct("Nuke")
+                        deduct("Mine")
+                        deduct("EMP")
+                        deduct("HVLI")
+
+                        local storageCap = comms_source:getMaxScanProbeCount()
+                        local current = comms_source:getScanProbeCount(type)
+                        local wantToProcure = storageCap - current
+                        local ableToProcure = math.min(freeport9["Probe"], wantToProcure)
+                        comms_source:setScanProbeCount(current + ableToProcure)
+                        freeport9["Probe"] = freeport9["Probe"] - ableToProcure
+
+                        setCommsMessage(_("Ordnance has been loaded onto your ship."))
+                        addCommsreply(
+                            _("Thanks."),
+                            function()
+                            end
+                        )
+                    end
+                )
+            end
+        end
+    )
 end
 
 function freeport9Comms_m1_1()
@@ -520,4 +572,18 @@ function minerHabComms_m1_6()
             hfFreighterCommsMissionSpecific = hfFreighterComms_m1_6
         end
     )
+end
+
+function bobsStationComms()
+    if comms_source:isDocked(bobsStation) then
+        setCommsMessage(_("Welcome to Bob's Diner! May I take your order?")) 
+        addCommsReply(
+            _("I'll have two number 9s, a number 9 large, a number 6 with extra dip,\na number 7, two number 45s, one with cheese, and a large soda (20 REP)"),
+            function()
+                comms_source:takeReputationPoints(20)
+            end
+        )
+    else
+        setCommsMessage(_("Welcome to Bob's Diner! Fly-through is curretly open.")) 
+    end
 end

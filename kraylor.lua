@@ -138,6 +138,8 @@ local function kralienFiendComms_3()
             setCommsMessage(_("Glory to raugharR' Clan! We crush these maggots!"))
         end
     )
+
+    --- todo: Kraylor arc
     addCommsReply(
         _("[NOT IMPLEMENTED YET] Sure, take him."),
         kralienFiendComms_3

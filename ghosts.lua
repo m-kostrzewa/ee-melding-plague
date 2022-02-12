@@ -20,6 +20,16 @@ function hfFreighterSosBlinking(delta)
     end
 end
 
+function updateAnomalousReadings(delta)
+    for i=1, #commerceFreighters do
+        local fr = commerceFreighters[i] 
+        if fr:isValid() and fr["infectedBy"] ~= nil then
+            fr:setRadarSignatureInfo(fr:getRadarSignatureGravity(), math.sin(getScenarioTime()*4), -math.sin(getScenarioTime()*4))
+        end
+    end
+    hfFreighter:setRadarSignatureInfo(hfFreighter:getRadarSignatureGravity(), math.sin(getScenarioTime()*4), -math.sin(getScenarioTime()*4))
+end
+
 function ghostsPlagueUpdate(delta)
     for i=1, #allStationsRefs do
         local station = allStationsRefs[i]
@@ -158,15 +168,16 @@ function hfFreighterComms_m1_2_inner()
             setCommsMessage(_("Ah, that's perfect! Thank you. Can't wait to breathe more oxygen, true! Setting course now."))
         end
     )
-    addCommsReply(
-        _("[NOT IMPLEMENTED YET] We will arrange a jump carrier from " .. freeport9:getCallSign()),
-        hfFreighterComms_m1_2_inner
-        -- function()
-        --     hfFreighter.awaitJumpCarrier = true
-        --     setCommsMessage(_("Confirm! " .. freeport9:getCallSign() .. ". A lot of traffic there these days. Please take us there soon. " ..
-        --         "We will await for the jump carrier here, yes. Please arrange it."))
-        -- end
-    )
+    --- todo: jump freighter arc
+    -- addCommsReply(
+    --     _("[NOT IMPLEMENTED YET] We will arrange a jump carrier from " .. freeport9:getCallSign()),
+    --     hfFreighterComms_m1_2_inner
+    --     -- function()
+    --     --     hfFreighter.awaitJumpCarrier = true
+    --     --     setCommsMessage(_("Confirm! " .. freeport9:getCallSign() .. ". A lot of traffic there these days. Please take us there soon. " ..
+    --     --         "We will await for the jump carrier here, yes. Please arrange it."))
+    --     -- end
+    -- )
 end
 
 function hfFreighterComms_m1_2()
