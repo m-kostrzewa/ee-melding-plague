@@ -1,4 +1,4 @@
-require("./69_freeport9_mayhem/globals.lua")
+require("./69_themeldingplague/globals.lua")
 
 
 function stroke1Comms_m1_1()

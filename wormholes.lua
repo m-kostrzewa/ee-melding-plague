@@ -1,4 +1,4 @@
-require("./69_freeport9_mayhem/globals.lua")
+require("./69_themeldingplague/globals.lua")
 
 function initializeWormholes()
     northExitWh = WormHole():setPosition(143898, -99701):setTargetPosition(170960, -132962):setCallSign("Independent Space")

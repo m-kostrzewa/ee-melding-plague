@@ -1,4 +1,4 @@
-require("./69_freeport9_mayhem/globals.lua")
+require("./69_themeldingplague/globals.lua")
 
 originalInfector = {}
 lastGhostIdx = 0

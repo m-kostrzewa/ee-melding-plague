@@ -1,4 +1,4 @@
-require("./69_freeport9_mayhem/globals.lua")
+require("./69_themeldingplague/globals.lua")
 
 local stateBeginNewLeg = 0
 local stateDuringTransit = 1

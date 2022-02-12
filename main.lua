@@ -1,12 +1,12 @@
 require("utils.lua")
-require("./69_freeport9_mayhem/comms.lua")
-require("./69_freeport9_mayhem/commerce.lua")
-require("./69_freeport9_mayhem/terrain.lua")
-require("./69_freeport9_mayhem/wormholes.lua")
-require("./69_freeport9_mayhem/globals.lua")
-require("./69_freeport9_mayhem/kraylor.lua")
-require("./69_freeport9_mayhem/ghosts.lua")
-require("./69_freeport9_mayhem/border.lua")
+require("./69_themeldingplague/comms.lua")
+require("./69_themeldingplague/commerce.lua")
+require("./69_themeldingplague/terrain.lua")
+require("./69_themeldingplague/wormholes.lua")
+require("./69_themeldingplague/globals.lua")
+require("./69_themeldingplague/kraylor.lua")
+require("./69_themeldingplague/ghosts.lua")
+require("./69_themeldingplague/border.lua")
 
 
 local numSectorsPerSide
@@ -216,14 +216,16 @@ end
 
 function myInit()
     print([[
- ______                              _   ___                          _                    
-|  ____|                            | | / _ \                        | |                   
-| |__ _ __ ___  ___ _ __   ___  _ __| || (_) |  _ __ ___   __ _ _   _| |__   ___ _ __ ___  
-|  __| '__/ _ \/ _ | '_ \ / _ \| '__| __\__, | | '_ ` _ \ / _` | | | | '_ \ / _ | '_ ` _ \ 
-| |  | | |  __|  __| |_) | (_) | |  | |_  / /  | | | | | | (_| | |_| | | | |  __| | | | | |
-|_|  |_|  \___|\___| .__/ \___/|_|   \__|/_/   |_| |_| |_|\__,_|\__, |_| |_|\___|_| |_| |_|
-                   | |                                           __/ |                     
-                   |_|                                          |___/       by Kosai
+
+_____ _           ___  ___     _     _ _                     _                        
+|_   _| |          |  \/  |    | |   | (_)                   | |                       
+  | | | |__   ___  | .  . | ___| | __| |_ _ __   __ _   _ __ | | __ _  __ _ _   _  ___ 
+  | | | '_ \ / _ \ | |\/| |/ _ | |/ _` | | '_ \ / _` | | '_ \| |/ _` |/ _` | | | |/ _ \
+  | | | | | |  __/ | |  | |  __| | (_| | | | | | (_| | | |_) | | (_| | (_| | |_| |  __/
+  \_/ |_| |_|\___| \_|  |_/\___|_|\__,_|_|_| |_|\__, | | .__/|_|\__,_|\__, |\__,_|\___|
+                                                 __/ | | |             __/ |  by Kosai 
+                                                |___/  |_|            |___/            
+        
   ]])
 
     currentMission = mission1_1_prologue
